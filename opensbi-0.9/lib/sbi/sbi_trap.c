@@ -195,6 +195,7 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 	return 0;
 }
 
+// extern int check_in_enclave_world();
 /**
  * Handle trap/interrupt
  *
@@ -264,6 +265,12 @@ struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 			SBI_PMU_FW_ACCESS_LOAD : SBI_PMU_FW_ACCESS_STORE);
 		/* fallthrough */
 	default:
+		// if (check_in_enclave_world() >=0) {
+		// 	sbi_printf("[Penglai] ecall from enclaves\n");
+		// 	rc = sbi_ecall_handler(regs);
+		// 	msg = "ecall handler failed";
+		// 	break;
+		// }
 		/* If the trap came from S or U mode, redirect it there */
 		trap.epc = regs->mepc;
 		trap.cause = mcause;
