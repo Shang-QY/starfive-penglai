@@ -28,7 +28,7 @@ typedef struct {
 #define SPIN_LOCK_INIT(x)	\
 	x = __SPIN_LOCK_UNLOCKED
 
-// #define SPINLOCK_INIT {0}
+#define SPINLOCK_INIT {0}
 
 #define SPIN_LOCK_INITIALIZER	\
 	__SPIN_LOCK_UNLOCKED
