@@ -1,8 +1,10 @@
 #include "penglai-enclave-ioctl.h"
 #include "syscall.h"
 
+#define PAGE_UP(addr)	(((addr)+((PAGE_SIZE)-1))&(~((PAGE_SIZE)-1)))
+
 //TODO: improve concurrency
-//now we just acqure a big clock before allocating enclave mem, and release the lock
+//now we just acqure a big lock before allocating enclave mem, and release the lock
 //after initializing mem and returning it back to sm
 DEFINE_SPINLOCK(enclave_create_lock);
 
