@@ -11,7 +11,7 @@ static spinlock_t sm_init_lock = SPINLOCK_INIT;
 
 void sm_init()
 {
-  platform_init();
+//   platform_init();
 }
 
 uintptr_t sm_mm_init(uintptr_t paddr, unsigned long size)

@@ -37,16 +37,18 @@
 	"        | |\n"                                     \
 	"        |_|\n\n"
 
+#define DEBUG_VERSION   2
+
 static void sbi_boot_print_banner(struct sbi_scratch *scratch)
 {
 	if (scratch->options & SBI_SCRATCH_NO_BOOT_PRINTS)
 		return;
 
 #ifdef OPENSBI_VERSION_GIT
-	sbi_printf("\nOpenSBI %s (with Penglai TEE)\n", OPENSBI_VERSION_GIT);
+	sbi_printf("\nOpenSBI %s (with Penglai TEE v%d)\n", OPENSBI_VERSION_GIT, DEBUG_VERSION);
 #else
-	sbi_printf("\nOpenSBI v%d.%d (with Penglai TEE)\n", OPENSBI_VERSION_MAJOR,
-		   OPENSBI_VERSION_MINOR);
+	sbi_printf("\nOpenSBI v%d.%d (with Penglai TEE v%d)\n", OPENSBI_VERSION_MAJOR,
+		   OPENSBI_VERSION_MINOR, DEBUG_VERSION);
 #endif
 
 #ifdef OPENSBI_BUILD_TIME_STAMP
@@ -290,11 +292,11 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 	}
 
-	rc = sbi_pmp_init(scratch, TRUE);
-	if (rc) {
-		sbi_printf("%s: (penglai) pmp init failed (error %d)\n", __func__, rc);
-		sbi_hart_hang();
-	}
+	// rc = sbi_pmp_init(scratch, TRUE);
+	// if (rc) {
+	// 	sbi_printf("%s: (penglai) pmp init failed (error %d)\n", __func__, rc);
+	// 	sbi_hart_hang();
+	// }
 
 	rc = sbi_timer_init(scratch, TRUE);
 	if (rc) {
@@ -321,14 +323,14 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 	}
 
-#if 0 /*FIXME(DD): handle this */
+// #if 0 /*FIXME(DD): handle this */
 	rc = sbi_hart_pmp_configure(scratch);
 	if (rc) {
 		sbi_printf("%s: PMP configure failed (error %d)\n",
 			   __func__, rc);
 		sbi_hart_hang();
 	}
-#endif
+// #endif
 
 	/*
 	 * Note: Platform final initialization should be last so that
@@ -396,21 +398,21 @@ static void init_warm_startup(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_pmp_init(scratch, FALSE);
-	if (rc) {
-		sbi_printf("%s: (penglai) pmp init failed (error %d)\n", __func__, rc);
-		sbi_hart_hang();
-	}
+	// rc = sbi_pmp_init(scratch, FALSE);
+	// if (rc) {
+	// 	sbi_printf("%s: (penglai) pmp init failed (error %d)\n", __func__, rc);
+	// 	sbi_hart_hang();
+	// }
 
 	rc = sbi_timer_init(scratch, FALSE);
 	if (rc)
 		sbi_hart_hang();
 
-#if 0 /*FIXME(DD): handle this */
+// #if 0 /*FIXME(DD): handle this */
 	rc = sbi_hart_pmp_configure(scratch);
 	if (rc)
 		sbi_hart_hang();
-#endif
+// #endif
 
 	rc = sbi_platform_final_init(plat, FALSE);
 	if (rc)
