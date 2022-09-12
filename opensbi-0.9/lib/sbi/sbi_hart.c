@@ -221,6 +221,8 @@ int sbi_hart_pmp_configure(struct sbi_scratch *scratch)
 			pmp_flags |= PMP_X;
 		if (reg->flags & SBI_DOMAIN_MEMREGION_MMODE)
 			pmp_flags |= PMP_L;
+        sbi_printf("[sbi_hart_pmp_configure] memory region address %lx and size %lx has flag: %x\n",
+				    reg->base, reg->order, pmp_flags);
 
 		pmp_addr =  reg->base >> PMP_SHIFT;
 		if (pmp_gran_log2 <= reg->order && pmp_addr < pmp_addr_max)

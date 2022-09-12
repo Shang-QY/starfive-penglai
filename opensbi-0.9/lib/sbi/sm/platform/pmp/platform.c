@@ -19,6 +19,7 @@ int platform_init()
   pmp_config.size = (unsigned long)SM_SIZE;
   pmp_config.mode = PMP_A_NAPOT;
   pmp_config.perm = PMP_NO_PERM;
+//   clear_pmp_and_sync(0);
   set_pmp_and_sync(0, pmp_config);
 
   //config the last PMP to allow kernel to access memory
@@ -27,8 +28,11 @@ int platform_init()
   pmp_config.mode = PMP_A_NAPOT;
   pmp_config.perm = PMP_R | PMP_W | PMP_X;
   //set_pmp(NPMP-1, pmp_config);
-  set_pmp_and_sync(NPMP-1, pmp_config);
+  set_pmp_and_sync(5, pmp_config);
+//   set_pmp_and_sync(15, pmp_config);
+//   set_pmp_and_sync(NPMP-1, pmp_config);
 
   printm("[Penglai Monitor@%s] setting initial PMP ready\n", __func__);
+  dump_pmps();
   return 0;
 }

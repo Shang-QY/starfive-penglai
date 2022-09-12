@@ -57,6 +57,8 @@ uintptr_t sm_alloc_enclave_mem(uintptr_t mm_alloc_arg)
 
   printm("[Penglai Monitor] %s invoked\r\n",__func__);
 
+  printm("before copy\n");
+  printm("copy_from_host: dest: %lx, src: %lx, size: %lx\r\n", (uintptr_t)&mm_alloc_arg_local, mm_alloc_arg, sizeof(struct mm_alloc_arg_t));
   retval = copy_from_host(&mm_alloc_arg_local,
       (struct mm_alloc_arg_t*)mm_alloc_arg,
       sizeof(struct mm_alloc_arg_t));

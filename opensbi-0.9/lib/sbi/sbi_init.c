@@ -45,7 +45,7 @@ static void sbi_boot_print_banner(struct sbi_scratch *scratch)
 #ifdef OPENSBI_VERSION_GIT
 	sbi_printf("\nOpenSBI %s (with Penglai TEE)\n", OPENSBI_VERSION_GIT);
 #else
-	sbi_printf("\nOpenSBI v%d.%d (with Penglai TEE)\n", OPENSBI_VERSION_MAJOR,
+	sbi_printf("\nOpenSBI v%d.%d (with Penglai TEE v3)\n", OPENSBI_VERSION_MAJOR,
 		   OPENSBI_VERSION_MINOR);
 #endif
 
@@ -271,6 +271,8 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 
 	sbi_boot_print_banner(scratch);
 
+    dump_pmps();
+
 	rc = sbi_platform_irqchip_init(plat, TRUE);
 	if (rc) {
 		sbi_printf("%s: platform irqchip init failed (error %d)\n",
@@ -333,6 +335,8 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 			   __func__, rc);
 		sbi_hart_hang();
 	}
+
+    dump_pmps();
 
 	/*
 	 * Note: Platform final initialization should be last so that
