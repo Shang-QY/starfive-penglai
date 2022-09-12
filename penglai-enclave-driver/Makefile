@@ -12,7 +12,7 @@ penglai-objs := penglai-enclave-driver.o \
 	penglai-enclave-ioctl.o 
 
 all:
-	make -C ../openeuler-kernel/ ARCH=riscv M=$(PWD) modules
+	make -C ../../linux-linux_5.15.10_devel_pwmdac/ CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv M=$(PWD) modules
 
 clean:
-	make -C ../openeuler-kernel/ ARCH=riscv M=$(PWD) clean
+	make -C ../../linux-linux_5.15.10_devel_pwmdac/ ARCH=riscv M=$(PWD) clean
