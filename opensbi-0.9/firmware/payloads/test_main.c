@@ -8,6 +8,7 @@
  */
 
 #include <sbi/sbi_ecall_interface.h>
+#include "uart.h"
 
 #define SBI_ECALL(__eid, __fid, __a0, __a1, __a2)                             \
 	({                                                                    \
@@ -42,8 +43,15 @@ static inline void sbi_ecall_console_puts(const char *str)
 
 void test_main(unsigned long a0, unsigned long a1)
 {
-	sbi_ecall_console_puts("\nTest payload running\n");
+    int i = 0;
+    sbi_ecall_console_puts("\nTest payload running\n");
+    uart_init(3);
 
-	while (1)
-		wfi();
+	while (1) {
+        if(i % 100000000000){
+            sbi_ecall_console_puts("\nTest payload running\n");
+            printk("\nTest UART3\n");
+        }
+        i++;
+    }
 }

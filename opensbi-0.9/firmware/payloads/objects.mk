@@ -11,6 +11,7 @@ firmware-bins-$(FW_PAYLOAD) += payloads/test.bin
 
 test-y += test_head.o
 test-y += test_main.o
+test-y += uart.o
 
 %/test.o: $(foreach obj,$(test-y),%/$(obj))
 	$(call merge_objs,$@,$^)
