@@ -373,25 +373,32 @@ static void init_warm_startup(struct sbi_scratch *scratch, u32 hartid)
 	unsigned long *init_count;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
+    sbi_printf("[hart] hart %d in init_warm_startup\n", hartid);
 	if (!init_count_offset)
 		sbi_hart_hang();
 
+    sbi_printf("[hart] hart %d in init_warm_startup before sbi_hsm_init\n", hartid);
 	rc = sbi_hsm_init(scratch, hartid, FALSE);
 	if (rc)
 		sbi_hart_hang();
 
+    // here will be stall
+    sbi_printf("[hart] hart %d in init_warm_startup before sbi_platform_early_init\n", hartid);
 	rc = sbi_platform_early_init(plat, FALSE);
 	if (rc)
 		sbi_hart_hang();
 
+    sbi_printf("[hart] hart %d in init_warm_startup before sbi_hart_init\n", hartid);
 	rc = sbi_hart_init(scratch, FALSE);
 	if (rc)
 		sbi_hart_hang();
 
+    sbi_printf("[hart] hart %d in init_warm_startup before sbi_pmu_init\n", hartid);
 	rc = sbi_pmu_init(scratch, FALSE);
 	if (rc)
 		sbi_hart_hang();
 
+    sbi_printf("[hart] hart %d in init_warm_startup before sbi_platform_irqchip_init\n", hartid);
 	rc = sbi_platform_irqchip_init(plat, FALSE);
 	if (rc)
 		sbi_hart_hang();
@@ -410,6 +417,7 @@ static void init_warm_startup(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 	}
 
+    sbi_printf("[hart] hart %d in init_warm_startup before sbi_timer_init\n", hartid);
 	rc = sbi_timer_init(scratch, FALSE);
 	if (rc)
 		sbi_hart_hang();
@@ -423,6 +431,7 @@ static void init_warm_startup(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
+    sbi_printf("[hart] hart %d in init_warm_startup before sbi_timer_init\n", hartid);
 	rc = sbi_platform_final_init(plat, FALSE);
 	if (rc)
 		sbi_hart_hang();
@@ -454,17 +463,22 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	int hstate;
 
+    sbi_printf("[hart] hart %d init_warmboot. before wait for coldboot\n", hartid);
 	wait_for_coldboot(scratch, hartid);
 
 	hstate = sbi_hsm_hart_get_state(sbi_domain_thishart_ptr(), hartid);
-	if (hstate < 0)
+	if (hstate < 0) {
+        sbi_printf("[hart] hart %d hstate: %d. before hart hang\n", hartid, hstate);
 		sbi_hart_hang();
+    }
 
-	if (hstate == SBI_HSM_STATE_SUSPENDED)
+	if (hstate == SBI_HSM_STATE_SUSPENDED){
+        sbi_printf("[hart] hart %d before init_warm_resume\n", hartid);
 		init_warm_resume(scratch);
-	else
+	} else {
+        sbi_printf("[hart] hart %d before init_warm_startup\n", hartid);
 		init_warm_startup(scratch, hartid);
-
+    }
 	sbi_hart_switch_mode(hartid, scratch->next_arg1,
 			     scratch->next_addr,
 			     scratch->next_mode, FALSE);
