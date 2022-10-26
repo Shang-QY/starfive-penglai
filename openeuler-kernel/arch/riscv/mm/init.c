@@ -664,11 +664,24 @@ static void __init resource_init(void)
 
 void __init paging_init(void)
 {
-	setup_vm_final();
+	unsigned long pa_start, pa_end;
+
+    setup_vm_final();
 	sparse_init();
 	setup_zero_page();
 	zone_sizes_init();
 	resource_init();
+
+    printk("hello sqy\n");
+    pa_start = (unsigned long)__pa_symbol(&_start);
+    pa_end = (unsigned long)PFN_PHYS(max_low_pfn);
+    printk("pa start: 0x%lx\n", pa_start);
+    printk("pa end: 0x%lx   (%4ld MB)\n", pa_end, ((pa_end - pa_start) >> 20));
+
+    printk("linear va start(page offset): 0x%lx, and pa: 0x%lx\n", PAGE_OFFSET, __pa(PAGE_OFFSET));
+    printk("linear va end: 0x%lx\n", (unsigned long)(__va(PFN_PHYS(max_low_pfn))));
+
+    printk("bye\n");
 }
 
 #ifdef CONFIG_SPARSEMEM_VMEMMAP
