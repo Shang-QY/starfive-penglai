@@ -43,14 +43,22 @@ static inline void sbi_ecall_console_puts(const char *str)
 
 void test_main(unsigned long a0, unsigned long a1)
 {
-    int i = 0;
-    sbi_ecall_console_puts("\nTest payload running\n");
+    unsigned long i = 0, j = 0;
+    unsigned long period = (1UL << 30);
+    char log[] = "000s: Test payload running!\n";
+
+    sbi_ecall_console_puts("\nTest payload start running\n");
     uart_init(3);
 
 	while (1) {
-        if(i % 100000000000){
-            sbi_ecall_console_puts("\nTest payload running\n");
-            printk("\nTest UART3\n");
+        if(i == period){
+            // printk("\nTest payload running: %ds\n", ++j);
+            ++j;
+            log[0] = '0' + ((j / 100) % 10);
+            log[1] = '0' + ((j / 10) % 10);
+            log[2] = '0' + ((j / 1) % 10);
+            sbi_ecall_console_puts(log);
+            i = 0;
         }
         i++;
     }
