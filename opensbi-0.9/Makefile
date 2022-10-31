@@ -379,9 +379,11 @@ compile_as_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	       -MM $(2) >> $(1) || rm -f $(1)
 compile_as = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " AS        $(subst $(build_dir)/,,$(1))"; \
+		 echo " AS-DEBUG  $(AS) $(ASFLAGS) $(call dynamic_flags,$(1),$(2)) -c $(2) -o $(1)"; \
 	     $(AS) $(ASFLAGS) $(call dynamic_flags,$(1),$(2)) -c $(2) -o $(1)
 compile_elf = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " ELF       $(subst $(build_dir)/,,$(1))"; \
+		 echo " ELF-DEBUG $(CC) $(CFLAGS) $(3) $(ELFFLAGS) -Wl,-T$(2) -o $(1)"; \
 	     $(CC) $(CFLAGS) $(3) $(ELFFLAGS) -Wl,-T$(2) -o $(1)
 compile_ar = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " AR        $(subst $(build_dir)/,,$(1))"; \

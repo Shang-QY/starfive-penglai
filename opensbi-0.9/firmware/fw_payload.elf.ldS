@@ -14,6 +14,20 @@ SECTIONS
 {
 	#include "fw_base.ldS"
 
+#ifdef FW_TEST_PAYLOAD_OFFSET
+	. = FW_TEXT_START + FW_TEST_PAYLOAD_OFFSET;
+#else
+	. = ALIGN(FW_TEST_PAYLOAD_ALIGN);
+#endif
+
+	.test_payload :
+	{
+		PROVIDE(_test_payload_start = .);
+		*(.test_payload)
+		. = ALIGN(8);
+		PROVIDE(_test_payload_end = .);
+	}
+
 #ifdef FW_PAYLOAD_OFFSET
 	. = FW_TEXT_START + FW_PAYLOAD_OFFSET;
 #else

@@ -46,6 +46,19 @@ firmware-genflags-$(FW_JUMP) += -DFW_JUMP_FDT_ADDR=$(FW_JUMP_FDT_ADDR)
 endif
 
 firmware-bins-$(FW_PAYLOAD) += fw_payload.bin
+ifdef FW_TEST_PAYLOAD_PATH
+FW_TEST_PAYLOAD_PATH_FINAL=$(FW_TEST_PAYLOAD_PATH)
+else
+FW_TEST_PAYLOAD_PATH_FINAL=$(platform_build_dir)/firmware/payloads/test.bin
+endif
+firmware-genflags-$(FW_PAYLOAD) += -DFW_TEST_PAYLOAD_PATH=\"$(FW_TEST_PAYLOAD_PATH_FINAL)\"
+ifdef FW_TEST_PAYLOAD_OFFSET
+firmware-genflags-$(FW_PAYLOAD) += -DFW_TEST_PAYLOAD_OFFSET=$(FW_TEST_PAYLOAD_OFFSET)
+endif
+ifdef FW_TEST_PAYLOAD_ALIGN
+firmware-genflags-$(FW_PAYLOAD) += -DFW_TEST_PAYLOAD_ALIGN=$(FW_TEST_PAYLOAD_ALIGN)
+endif
+
 ifdef FW_PAYLOAD_PATH
 FW_PAYLOAD_PATH_FINAL=$(FW_PAYLOAD_PATH)
 else

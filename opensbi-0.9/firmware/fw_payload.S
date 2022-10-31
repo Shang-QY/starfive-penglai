@@ -85,6 +85,17 @@ fw_options:
 	add	a0, zero, zero
 	ret
 
+	.section .test_payload, "ax", %progbits
+	.align 4
+	.globl test_payload_bin
+test_payload_bin:
+#ifndef FW_TEST_PAYLOAD_PATH
+	wfi
+	j	test_payload_bin
+#else
+	.incbin	FW_TEST_PAYLOAD_PATH
+#endif
+
 	.section .payload, "ax", %progbits
 	.align 4
 	.globl payload_bin
