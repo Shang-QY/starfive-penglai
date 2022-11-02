@@ -259,6 +259,14 @@ uintptr_t sm_destroy_enclave(uintptr_t *regs, uintptr_t enclave_id)
   return ret;
 }
 
+uintptr_t sm_run_sec_linux(uintptr_t *regs)
+{
+  uintptr_t ret = 0;
+  sbi_printf("[sm_rum_sec_linux] running\n");
+
+  return ret;
+}
+
 uintptr_t sm_do_timer_irq(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc)
 {
   uintptr_t ret;
