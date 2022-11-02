@@ -1,0 +1,4 @@
+libpenglai-enclave-host.a
+*.o
+*.dump
+source.sh
