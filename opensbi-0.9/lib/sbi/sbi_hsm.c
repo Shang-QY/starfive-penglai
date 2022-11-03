@@ -117,7 +117,9 @@ static void sbi_hsm_hart_wait(struct sbi_scratch *scratch, u32 hartid)
 	csr_set(CSR_MIE, MIP_MSIP);
 
 	/* Wait for hart_add call*/
+    sbi_printf("[sbi_hsm_hart_wait] hart%d enter and wait\n", hartid);
 	while (atomic_read(&hdata->state) != SBI_HSM_STATE_START_PENDING) {
+        sbi_printf("[sbi_hsm_hart_wait] hart%d enter wfi\n", hartid);
 		wfi();
 	};
 
@@ -185,6 +187,7 @@ int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 	struct sbi_hsm_data *hdata;
 
 	if (cold_boot) {
+        sbi_printf("[cold boot hart%d] [sbi_hsm_init] set hdata state STOPPED\n", hartid);
 		hart_data_offset = sbi_scratch_alloc_offset(sizeof(*hdata));
 		if (!hart_data_offset)
 			return SBI_ENOMEM;
@@ -262,6 +265,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 	if (!rscratch)
 		return SBI_EINVAL;
 	hdata = sbi_scratch_offset_ptr(rscratch, hart_data_offset);
+    sbi_printf("[sbi_hsm_hart_init] set hart%d state PENDDING\n", hartid);
 	hstate = atomic_cmpxchg(&hdata->state, SBI_HSM_STATE_STOPPED,
 				SBI_HSM_STATE_START_PENDING);
 	if (hstate == SBI_HSM_STATE_STARTED)
@@ -281,8 +285,10 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 
 	if (hsm_device_has_hart_hotplug() ||
 	   (hsm_device_has_hart_secondary_boot() && !init_count)) {
+        sbi_printf("[sbi_hsm_hart_start] hartid: %d, has hart hotplug\n", hartid);
 		return hsm_device_hart_start(hartid, scratch->warmboot_addr);
 	} else {
+        sbi_printf("[sbi_hsm_hart_start] hartid: %d, no hart hotplug, ipi_send\n", hartid);
 		sbi_ipi_raw_send(hartid);
 	}
 

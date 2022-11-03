@@ -179,11 +179,14 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	spin_unlock(&coldboot_lock);
 
 	/* Wait for coldboot to finish using WFI */
+    sbi_printf("[wait for coldboot] hart%d is ready to waiting\n", hartid);
 	while (!__smp_load_acquire(&coldboot_done)) {
+        sbi_printf("[wait for coldboot] hart%d enter wfi\n", hartid);
 		do {
 			wfi();
 			cmip = csr_read(CSR_MIP);
 		 } while (!(cmip & MIP_MSIP));
+        sbi_printf("[wait for coldboot] hart%d wake by MSIP interupt\n", hartid);
 	};
 
 	/* Acquire coldboot lock */
@@ -215,12 +218,15 @@ static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 
 	/* Acquire coldboot lock */
 	spin_lock(&coldboot_lock);
+    sbi_printf("[wake_coldboot_harts] hart%d ready to wake up others\n", hartid);
 
 	/* Send an IPI to all HARTs waiting for coldboot */
 	for (u32 i = 0; i <= sbi_scratch_last_hartid(); i++) {
 		if ((i != hartid) &&
-		    sbi_hartmask_test_hart(i, &coldboot_wait_hmask))
+		    sbi_hartmask_test_hart(i, &coldboot_wait_hmask)){
+            sbi_printf("[wake_coldboot_harts] hart%d wake up hart%d\n", hartid, i);
 			sbi_ipi_raw_send(i);
+        }
 	}
 
 	/* Release coldboot lock */
@@ -311,12 +317,24 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 	}
 
+    sbi_printf("[init_coldboot] ready to enter sbi_domain_finalize\n");
+    unsigned long i = 0, j = 0;
+    unsigned long period = (1UL << 30);
+    while (j < 3) {
+        if(i == period){
+            sbi_printf("\nopensbi payload running: %lds\n", ++j);
+            i = 0;
+        }
+        i++;
+    }
+
 	/*
 	 * Note: Finalize domains after HSM initialization so that we
 	 * can startup non-root domains.
 	 * Note: Finalize domains before HART PMP configuration so
 	 * that we use correct domain for configuring PMP.
 	 */
+    sbi_printf("[init_coldboot] enter sbi_domain_finalize\n");
 	rc = sbi_domain_finalize(scratch, hartid);
 	if (rc) {
 		sbi_printf("%s: domain finalize failed (error %d)\n",
@@ -336,8 +354,6 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 	}
 
-    dump_pmps();
-
 	/*
 	 * Note: Platform final initialization should be last so that
 	 * it sees correct domain assignment and PMP configuration.
@@ -355,7 +371,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 
 	sbi_boot_print_hart(scratch, hartid);
 
-	sbi_printf("[Penglai] Penglai Enclave Preparing\n");
+    sbi_printf("[init_coldboot] enter wake_coldboot_harts\n");
 
 	wake_coldboot_harts(scratch, hartid);
 
@@ -479,6 +495,12 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
         sbi_printf("[hart] hart %d before init_warm_startup\n", hartid);
 		init_warm_startup(scratch, hartid);
     }
+
+    while (1) {
+        sbi_printf("[sbi_init_warmboot] start to enter wfi\n");
+		wfi();
+	};
+
 	sbi_hart_switch_mode(hartid, scratch->next_arg1,
 			     scratch->next_addr,
 			     scratch->next_mode, FALSE);

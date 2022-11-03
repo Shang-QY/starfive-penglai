@@ -2,6 +2,7 @@
 #include <sbi/riscv_atomic.h>
 #include <sm/sm.h>
 #include <sm/pmp.h>
+#include <sbi/sbi_ipi.h>
 #include <sm/enclave.h>
 #include <sm/attest.h>
 #include <sm/math.h>
@@ -262,7 +263,11 @@ uintptr_t sm_destroy_enclave(uintptr_t *regs, uintptr_t enclave_id)
 uintptr_t sm_run_sec_linux(uintptr_t *regs)
 {
   uintptr_t ret = 0;
-  sbi_printf("[sm_rum_sec_linux] running\n");
+  u32 source_hart = current_hartid();
+
+  sbi_printf("[sm_rum_sec_linux] ecall success, it's time to wake up linux\n");
+  sbi_ipi_send_smode(0xFFFFFFFF&(~(1<<source_hart)), 0);
+  sbi_printf("[sm_rum_sec_linux] ipi sended\n");
 
   return ret;
 }

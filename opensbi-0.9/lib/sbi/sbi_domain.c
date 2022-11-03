@@ -557,6 +557,7 @@ int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 			scratch->next_mode = dom->next_mode;
 			scratch->next_arg1 = dom->next_arg1;
 		} else {
+            sbi_printf("[sbi_domain_finalize] coldboot hart%d will enter sbi_hsm_hart_start\n", cold_hartid);
 			rc = sbi_hsm_hart_start(scratch, NULL, dhart,
 						dom->next_addr,
 						dom->next_mode,
@@ -575,6 +576,7 @@ int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 	 * regions can't be changed.
 	 */
 	domain_finalized = true;
+    sbi_printf("[sbi_domain_finalize] finished\n");
 
 	return 0;
 }

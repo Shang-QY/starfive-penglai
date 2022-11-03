@@ -617,6 +617,11 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 	//Init Penglai SM here
 	sm_init();
 
+    // while (1) {
+    //     sbi_printf("[sbi_hart_switch_mode] start to enter wfi\n");
+	// 	wfi();
+	// };
+
 	register unsigned long a0 asm("a0") = arg0;
 	register unsigned long a1 asm("a1") = arg1;
 	__asm__ __volatile__("mret" : : "r"(a0), "r"(a1));
