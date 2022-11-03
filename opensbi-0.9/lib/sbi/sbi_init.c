@@ -462,6 +462,7 @@ static void init_warm_resume(struct sbi_scratch *scratch)
 static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	int hstate;
+    unsigned long saved_mie, cmip, interupt_num;
 
     sbi_printf("[hart] hart %d init_warmboot. before wait for coldboot\n", hartid);
 	wait_for_coldboot(scratch, hartid);
@@ -479,6 +480,27 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
         sbi_printf("[hart] hart %d before init_warm_startup\n", hartid);
 		init_warm_startup(scratch, hartid);
     }
+
+    /* Save MIE CSR */
+	saved_mie = csr_read(CSR_MIE);
+
+	/* Set MSIE bit to receive IPI */
+	csr_set(CSR_MIE, MIP_MSIP);
+
+    interupt_num = 0;
+    /* Qingyu: now just wait for an interupt */
+    while (interupt_num < 5) {
+        sbi_printf("[sbi_init_warmboot] start to enter wfi\n");
+		wfi();
+        cmip = csr_read(CSR_MIP);
+        if(cmip & MIP_MSIP){
+            interupt_num++;
+            sbi_printf("[wait for coldboot] hart%d wake by MSIP interupt, num: %ld\n", hartid, interupt_num);
+        }
+	};
+
+    csr_write(CSR_MIE, saved_mie);
+
 	sbi_hart_switch_mode(hartid, scratch->next_arg1,
 			     scratch->next_addr,
 			     scratch->next_mode, FALSE);

@@ -6,6 +6,7 @@
 #include <sm/attest.h>
 #include <sm/math.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_ipi.h>
 
 //static int sm_initialized = 0;
 //static spinlock_t sm_init_lock = SPINLOCK_INIT;
@@ -262,7 +263,15 @@ uintptr_t sm_destroy_enclave(uintptr_t *regs, uintptr_t enclave_id)
 uintptr_t sm_run_sec_linux(uintptr_t *regs)
 {
   uintptr_t ret = 0;
-  sbi_printf("[sm_rum_sec_linux] running\n");
+  u32 source_hart = current_hartid();
+
+  sbi_printf("[sm_rum_sec_linux] ecall success, it's time to wake up linux\n");
+  if (source_hart == 0) {
+    sbi_ipi_raw_send(1);
+    sbi_printf("[sm_rum_sec_linux] ipi sended\n");
+  } else {
+    sbi_printf("[sm_rum_sec_linux] ipi sended failed\n");
+  }
 
   return ret;
 }
