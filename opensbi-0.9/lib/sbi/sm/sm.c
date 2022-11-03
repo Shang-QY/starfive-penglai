@@ -266,8 +266,12 @@ uintptr_t sm_run_sec_linux(uintptr_t *regs)
   u32 source_hart = current_hartid();
 
   sbi_printf("[sm_rum_sec_linux] ecall success, it's time to wake up linux\n");
-  sbi_ipi_send_smode(0xFFFFFFFF&(~(1<<source_hart)), 0);
-  sbi_printf("[sm_rum_sec_linux] ipi sended\n");
+  if (source_hart == 0) {
+    sbi_ipi_raw_send(1);
+    sbi_printf("[sm_rum_sec_linux] ipi sended\n");
+  } else {
+    sbi_printf("[sm_rum_sec_linux] ipi sended failed\n");
+  }
 
   return ret;
 }
