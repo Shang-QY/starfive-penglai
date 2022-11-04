@@ -4,7 +4,23 @@
 int penglai_load_and_run_linux(struct file *filep, unsigned long args)
 {
     struct penglai_enclave_user_param *enclave_param = (struct penglai_enclave_user_param *)args;
-    int ret = run_linux();
+    unsigned long payload_mem_start = (unsigned long)(__va(0x180000000));
+    unsigned long payload_mem_size = 0x100000000;
+    int ret;
+
+    printk("KERNEL MODULE : hello qy\n");
+    printk("KERNEL MODULE : linear va start(page offset):   0x%lx, and pa: 0x%lx\n", PAGE_OFFSET, __pa(PAGE_OFFSET));
+    printk("KERNEL MODULE : linear va of test_payload:      0x%lx, and pa: 0x%lx\n", (unsigned long)(__va(0x180000000)), 0x180000000);
+    printk("KERNEL MODULE : bye\n");
+
+    memset((void*)payload_mem_start, 0, payload_mem_size);
+    if(copy_from_user((void*)payload_mem_start, (void*)enclave_param->bin_ptr, enclave_param->bin_size))
+	{
+		printk("KERNEL MODULE : copy from the user is failed\n");
+		return -EFAULT;
+	}
+
+    ret = run_linux();
 
     return ret;
 }
