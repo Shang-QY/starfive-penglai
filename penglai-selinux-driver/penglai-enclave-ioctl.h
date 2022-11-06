@@ -12,6 +12,8 @@ struct penglai_enclave_user_param
 {
 	unsigned long bin_ptr;
 	unsigned long bin_size;
+    unsigned long dtb_ptr;
+    unsigned long dtb_size;
 };
 
 long penglai_enclave_ioctl(struct file* filep, unsigned int cmd, unsigned long args);

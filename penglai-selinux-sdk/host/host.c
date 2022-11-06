@@ -1,12 +1,12 @@
 #include "penglai-enclave.h"
 #include <stdlib.h>
 
-void load_and_run(struct elf_args *enclaveFile)
+void load_and_run(struct elf_args *enclaveFile, struct elf_args *dtbFile)
 {
     struct PLenclave *enclave = malloc(sizeof(struct PLenclave));
     PLenclave_init(enclave);
 
-    if (PLenclave_load_and_run(enclave, enclaveFile) < 0)
+    if (PLenclave_load_and_run(enclave, enclaveFile, dtbFile) < 0)
     {
         printf("host: failed to create enclave\n");
     }
@@ -17,9 +17,9 @@ void load_and_run(struct elf_args *enclaveFile)
 
 int main(int argc, char **argv)
 {
-    if (argc <= 1)
+    if (argc <= 2)
     {
-        printf("Please input the linux binary file name\n");
+        printf("Please input the linux binary file name and linux dtb file name\n");
     }
     char *eappfile = argv[1];
 
@@ -32,7 +32,18 @@ int main(int argc, char **argv)
         goto out;
     }
 
-    load_and_run(enclaveFile);
+    char *dtbfile = argv[2];
+
+    struct elf_args *dtbFile = malloc(sizeof(struct elf_args));
+    elf_args_init(dtbFile, dtbfile);
+
+    if (!elf_valid(dtbFile))
+    {
+        printf("error when initializing enclaveFile\n");
+        goto out;
+    }
+
+    load_and_run(enclaveFile, dtbFile);
 
 out:
     elf_args_destroy(enclaveFile);
