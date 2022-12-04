@@ -12,6 +12,7 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/sbi_console.h>
 #include <sm/sm.h>
+#include <sbi/sbi_hart.h>
 
 
 static int sbi_ecall_penglai_host_handler(unsigned long extid, unsigned long funcid,
@@ -54,6 +55,11 @@ static int sbi_ecall_penglai_host_handler(unsigned long extid, unsigned long fun
 			break;
         case SBI_SM_RUN_SEC_LINUX:
             ret = sm_run_sec_linux((uintptr_t *)regs);
+            break;
+        case 89:
+            sbi_printf("[Penglai@Monitor] host interface(funcid:%ld) reboot\n", funcid);
+            sbi_hart_switch_mode(0, 0x186000000, regs->a0, PRV_S, FALSE);
+            ret = 0;
             break;
 		default:
 			sbi_printf("[Penglai@Monitor] host interface(funcid:%ld) not supported yet\n", funcid);
