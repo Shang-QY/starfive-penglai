@@ -7,29 +7,32 @@ int penglai_load_and_run_linux(struct file *filep, unsigned long args)
     unsigned long payload_mem_start = (unsigned long)(__va(0x180000000));
     unsigned long payload_mem_size = 0x100000000;
     unsigned long payload_bin_start = (unsigned long)(__va(0x180200000));
-    unsigned long payload_dtb_start = (unsigned long)(__va(0x182200000));
+    unsigned long payload_dtb_start = (unsigned long)(__va(0x186000000));
     int ret;
 
     printk("KERNEL MODULE : hello qy\n");
-    printk("KERNEL MODULE : linear va start(page offset):   0x%lx, and pa: 0x%lx\n", PAGE_OFFSET, __pa(PAGE_OFFSET));
-    printk("KERNEL MODULE : linear va of test_payload:      0x%lx, and pa: 0x%lx\n", (unsigned long)(__va(0x180000000)), 0x180000000);
-    printk("KERNEL MODULE : bye\n");
 
+    printk("KERNEL MODULE : memset secure memory with 0\n");
     memset((void*)payload_mem_start, 0, payload_mem_size);
 
+    printk("KERNEL MODULE : load linux_img: linear va: 0x%lx, and pa: 0x%lx\n", payload_bin_start, (unsigned long)(__pa(payload_bin_start)));
     if(copy_from_user((void*)payload_bin_start, (void*)enclave_param->bin_ptr, enclave_param->bin_size))
 	{
 		printk("KERNEL MODULE : bin copy from the user is failed\n");
 		return -EFAULT;
 	}
 
+    printk("KERNEL MODULE : load linux dtb: linear va: 0x%lx, and pa: 0x%lx\n", payload_dtb_start, (unsigned long)(__pa(payload_dtb_start)));
     if(copy_from_user((void*)payload_dtb_start, (void*)enclave_param->dtb_ptr, enclave_param->dtb_size))
 	{
 		printk("KERNEL MODULE : dtb copy from the user is failed\n");
 		return -EFAULT;
 	}
 
+    printk("KERNEL MODULE : ecall run sec linux\n");
     ret = run_linux();
+    
+    printk("KERNEL MODULE : bye\n");
 
     return ret;
 }
