@@ -10,7 +10,7 @@ penglai_linux-objs := penglai-enclave-driver.o \
 	penglai-enclave-ioctl.o 
 
 all:
-	make -C ../../linux-linux_5.15.10_devel_pwmdac/ CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv M=$(PWD) modules
+	make -C ../../starfive-normal-linux/ CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv M=$(PWD) modules
 
 clean:
-	make -C ../../linux-linux_5.15.10_devel_pwmdac/ ARCH=riscv M=$(PWD) clean
+	make -C ../../starfive-normal-linux/ ARCH=riscv M=$(PWD) clean
