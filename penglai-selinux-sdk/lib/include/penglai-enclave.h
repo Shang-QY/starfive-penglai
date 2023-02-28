@@ -27,8 +27,10 @@ struct penglai_enclave_user_param
 {
     unsigned long bin_ptr;
     unsigned long bin_size;
+    unsigned long bin_loadaddr;
     unsigned long dtb_ptr;
     unsigned long dtb_size;
+    unsigned long dtb_loadaddr;
 };
 
 struct PLenclave
@@ -41,6 +43,6 @@ struct PLenclave
 
 void PLenclave_init(struct PLenclave *PLenclave);
 void PLenclave_finalize(struct PLenclave *PLenclave);
-int PLenclave_load_and_run(struct PLenclave *PLenclave, struct elf_args *u_bin_file, struct elf_args *u_dtb_file);
+int PLenclave_load_and_run(struct PLenclave *PLenclave, struct elf_args *u_bin_file, unsigned long bin_loadaddr, struct elf_args *u_dtb_file, unsigned long dtb_loadaddr);
 
 #endif

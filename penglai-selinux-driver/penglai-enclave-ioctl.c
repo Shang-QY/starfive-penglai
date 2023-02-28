@@ -4,17 +4,11 @@
 int penglai_load_and_run_linux(struct file *filep, unsigned long args)
 {
     struct penglai_enclave_user_param *enclave_param = (struct penglai_enclave_user_param *)args;
-    unsigned long payload_mem_start = (unsigned long)(__va(0x180000000));
-    unsigned long payload_mem_size = 0x100000000;
-    unsigned long payload_bin_start = (unsigned long)(__va(0x180200000));
-    unsigned long payload_dtb_start = (unsigned long)(__va(0x186000000));
+    unsigned long payload_bin_start = (unsigned long)(__va(enclave_param->bin_loadaddr));
+    unsigned long payload_dtb_start = (unsigned long)(__va(enclave_param->dtb_loadaddr));
     int ret;
 
     printk("KERNEL MODULE : hello qy\n");
-
-    printk("KERNEL MODULE : memset secure memory with 0\n");
-    memset((void*)payload_mem_start, 0, payload_mem_size);
-
     printk("KERNEL MODULE : load linux_img: linear va: 0x%lx, and pa: 0x%lx\n", payload_bin_start, (unsigned long)(__pa(payload_bin_start)));
     if(copy_from_user((void*)payload_bin_start, (void*)enclave_param->bin_ptr, enclave_param->bin_size))
 	{
