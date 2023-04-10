@@ -36,7 +36,37 @@
 #define SBI_SM_FREE_ENCLAVE_MEM          91
 #define SBI_SM_RUN_SEC_LINUX             90
 #define SBI_SM_DEBUG_PRINT               88
+#define SBI_SM_ATTEST_SEC_LINUX          87
+
+
+#define PRIVATE_KEY_SIZE       32
+#define PUBLIC_KEY_SIZE        64
+#define HASH_SIZE              32
+#define SIGNATURE_SIZE         64
+#define TEE_CUSTOM_FIELD_SIZE  512
+
+struct tee_sig_message_t
+{
+  unsigned char hash[HASH_SIZE];
+  unsigned char custom_field[TEE_CUSTOM_FIELD_SIZE];
+  unsigned long nonce;
+};
+
+struct tee_report_t
+{
+  struct tee_sig_message_t sig_message;
+  unsigned char signature[SIGNATURE_SIZE];
+  unsigned char sm_pub_key[PUBLIC_KEY_SIZE];
+};
+
+struct signature_t
+{
+  unsigned char r[PUBLIC_KEY_SIZE/2];
+  unsigned char s[PUBLIC_KEY_SIZE/2];
+};
 
 int run_linux(void);
+
+int attest_linux(struct tee_report_t *report, unsigned long nonce);
 
 #endif

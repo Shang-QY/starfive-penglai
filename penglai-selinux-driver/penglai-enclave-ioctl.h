@@ -7,6 +7,8 @@
 
 #define PENGLAI_IOC_LOAD_AND_RUN_LINUX \
 	_IOR(PENGLAI_ENCLAVE_IOC_MAGIC, 0x00, struct penglai_enclave_user_param)
+#define PENGLAI_IOC_ATTEST_LINUX \
+	_IOR(PENGLAI_ENCLAVE_IOC_MAGIC, 0x01, struct penglai_enclave_ioctl_attest_tee)
 
 struct penglai_enclave_user_param
 {
@@ -16,6 +18,12 @@ struct penglai_enclave_user_param
     unsigned long dtb_ptr;
     unsigned long dtb_size;
     unsigned long dtb_loadaddr;
+};
+
+struct penglai_enclave_ioctl_attest_tee
+{
+	unsigned long nonce;
+	struct tee_report_t report;
 };
 
 long penglai_enclave_ioctl(struct file* filep, unsigned int cmd, unsigned long args);

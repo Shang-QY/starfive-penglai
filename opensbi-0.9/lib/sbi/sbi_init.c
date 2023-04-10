@@ -26,6 +26,7 @@
 #include <sbi/sbi_tlb.h>
 #include <sbi/sbi_pmp.h>
 #include <sbi/sbi_version.h>
+#include <sm/sm.h>
 
 #define BANNER                                              \
 	"   ____                    _____ ____ _____\n"     \
@@ -462,7 +463,7 @@ static void init_warm_resume(struct sbi_scratch *scratch)
 static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	int hstate;
-    unsigned long saved_mie, cmip, interupt_num;
+    unsigned long saved_mie, cmip;
 
     sbi_printf("[hart] hart %d init_warmboot. before wait for coldboot\n", hartid);
 	wait_for_coldboot(scratch, hartid);
@@ -487,15 +488,16 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 	/* Set MSIE bit to receive IPI */
 	csr_set(CSR_MIE, MIP_MSIP);
 
-    interupt_num = 0;
+    sbi_printf("[sbi_init_warmboot] hart%d waiting for a MSIP interupt\n", hartid);
+
     /* Qingyu: now just wait for an interupt */
-    while (interupt_num < 5) {
-        sbi_printf("[sbi_init_warmboot] start to enter wfi\n");
+    while (true) {
+        sbi_printf("[sbi_init_warmboot] hart%d ready to enter wfi\n", hartid);
 		wfi();
         cmip = csr_read(CSR_MIP);
         if(cmip & MIP_MSIP){
-            interupt_num++;
-            sbi_printf("[wait for coldboot] hart%d wake by MSIP interupt, num: %ld\n", hartid, interupt_num);
+            sbi_printf("[sbi_init_warmboot] hart%d wake by MSIP interupt\n", hartid);
+            break;
         }
 	};
 

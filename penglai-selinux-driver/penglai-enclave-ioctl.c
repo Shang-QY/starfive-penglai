@@ -31,6 +31,22 @@ int penglai_load_and_run_linux(struct file *filep, unsigned long args)
     return ret;
 }
 
+int penglai_attest_linux(struct file *filep, unsigned long args)
+{
+    struct penglai_enclave_ioctl_attest_tee *enclave_param = (struct penglai_enclave_ioctl_attest_tee *)args;
+    struct tee_report_t* report = kmalloc(sizeof(struct tee_report_t), GFP_KERNEL);
+    int ret;
+
+    printk("KERNEL MODULE : hello qy\n");
+    printk("KERNEL MODULE : ecall attest sec linux\n");
+    ret = attest_linux(report, enclave_param->nonce);
+    enclave_param->report = *report;
+    
+    printk("KERNEL MODULE : bye\n");
+    kfree(report);
+    return ret;
+}
+
 long penglai_enclave_ioctl(struct file *filep, unsigned int cmd, unsigned long args)
 {
     char ioctl_data[1024];
@@ -53,6 +69,9 @@ long penglai_enclave_ioctl(struct file *filep, unsigned int cmd, unsigned long a
     {
     case PENGLAI_IOC_LOAD_AND_RUN_LINUX:
         ret = penglai_load_and_run_linux(filep, (unsigned long)ioctl_data);
+        break;
+    case PENGLAI_IOC_ATTEST_LINUX:
+        ret = penglai_attest_linux(filep, (unsigned long)ioctl_data);
         break;
     default:
         return -EFAULT;

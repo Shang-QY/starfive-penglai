@@ -265,15 +265,48 @@ uintptr_t sm_run_sec_linux(uintptr_t *regs)
   uintptr_t ret = 0;
   u32 source_hart = current_hartid();
 
-  sbi_printf("[sm_rum_sec_linux] ecall success, it's time to wake up linux\n");
   if (source_hart == 0) {
+    // TODO: Qingyu
+    sbi_printf("[sm_rum_sec_linux] Memory isolated, it's time to measure sec_linux\n");
+
+    hash_sec_linux();
+    sbi_printf("[sm_rum_sec_linux] Measuremant finished, it's time to wake up sec_linux\n");
+
     sbi_ipi_raw_send(1);
     sbi_printf("[sm_rum_sec_linux] ipi sended\n");
-  } else {
-    sbi_printf("[sm_rum_sec_linux] ipi sended failed\n");
   }
 
   return ret;
+}
+
+uintptr_t sm_attest_sec_linux(uintptr_t report_ptr, uintptr_t nonce)
+{
+  uintptr_t retval = 0;
+  uintptr_t upbound = 0xffffffffffffffffULL;
+  sbi_printf("[Penglai Monitor] %s invoked\r\n",__func__);
+
+  struct enclave_t* enclave = NULL;
+  struct tee_report_t report;
+
+  if(upbound - report_ptr < sizeof(struct tee_report_t)
+            || report_ptr + sizeof(struct tee_report_t) > TEE_ADDR){
+    sbi_printf("[Penglai Monitor] %s Error: try to access tee region\r\n",__func__);
+    retval = -1UL;
+    goto out;
+  }
+
+  sbi_memcpy((void*)(report.sm_pub_key), (void*)SM_PUB_KEY, PUBLIC_KEY_SIZE);
+  sbi_memcpy((void*)(report.sig_message.custom_field), (void*)TEE_CUSTOM_FIELD_ADDR, TEE_CUSTOM_FIELD_SIZE);
+  sbi_memcpy((void*)(report.sig_message.hash), (void*)TEE_HASH, HASH_SIZE);
+  report.sig_message.nonce = nonce;
+
+  sign_sec_linux((void*)(report.signature), (void*)(&report.sig_message), sizeof(struct tee_sig_message_t));
+
+  sbi_memcpy((void*)report_ptr, (void*)(&report), sizeof(struct tee_report_t));
+
+out:
+  sbi_printf("[Penglai Monitor] %s return: %ld\r\n",__func__, retval);
+  return retval;
 }
 
 uintptr_t sm_do_timer_irq(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc)

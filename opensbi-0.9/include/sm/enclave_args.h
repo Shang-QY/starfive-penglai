@@ -14,6 +14,12 @@
 #define SM_HASH                (SM_PRI_KEY + PRIVATE_KEY_SIZE)
 #define SM_SIGNATURE           (SM_HASH + HASH_SIZE)
 
+#define TEE_ADDR                0xc0000000
+#define TEE_SIZE                0x1c0000000
+#define TEE_CUSTOM_FIELD_ADDR   0x100000000
+#define TEE_CUSTOM_FIELD_SIZE   512
+#define TEE_HASH               (SM_SIGNATURE + SIGNATURE_SIZE)
+
 struct mm_alloc_arg_t
 {
   unsigned long req_size;
@@ -41,6 +47,20 @@ struct report_t
   struct sm_report_t sm;
   struct enclave_report_t enclave;
   unsigned char dev_pub_key[PUBLIC_KEY_SIZE];
+};
+
+struct tee_sig_message_t
+{
+  unsigned char hash[HASH_SIZE];
+  unsigned char custom_field[TEE_CUSTOM_FIELD_SIZE];
+  unsigned long nonce;
+};
+
+struct tee_report_t
+{
+  struct tee_sig_message_t sig_message;
+  unsigned char signature[SIGNATURE_SIZE];
+  unsigned char sm_pub_key[PUBLIC_KEY_SIZE];
 };
 
 struct prikey_t

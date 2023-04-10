@@ -13,4 +13,8 @@ void sign_enclave(void* signature, unsigned char *message, int len);
 
 int verify_enclave(void* signature, unsigned char *message, int len);
 
+void hash_sec_linux();
+
+void sign_sec_linux(void* signature, unsigned char *message, int len);
+
 #endif /* _ATTEST_H */

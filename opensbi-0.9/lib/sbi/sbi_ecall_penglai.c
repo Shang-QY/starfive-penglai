@@ -56,6 +56,9 @@ static int sbi_ecall_penglai_host_handler(unsigned long extid, unsigned long fun
         case SBI_SM_RUN_SEC_LINUX:
             ret = sm_run_sec_linux((uintptr_t *)regs);
             break;
+        case SBI_SM_ATTEST_SEC_LINUX:
+            ret = sm_attest_sec_linux(regs->a0, regs->a1);
+            break;
         case 89:
             sbi_printf("[Penglai@Monitor] host interface(funcid:%ld) reboot\n", funcid);
             sbi_hart_switch_mode(0, 0x186000000, regs->a0, PRV_S, FALSE);

@@ -63,3 +63,19 @@ int PLenclave_load_and_run(struct PLenclave *PLenclave, struct elf_args *u_bin_f
 
     return 0;
 }
+
+int PLenclave_attest(struct PLenclave *PLenclave, unsigned long nonce)
+{
+    int ret = 0;
+
+    PLenclave->attest_param.nonce = nonce;
+
+    ret = ioctl(PLenclave->fd, PENGLAI_IOC_ATTEST_LINUX, &(PLenclave->attest_param));
+    if (ret < 0)
+    {
+        fprintf(stderr, "LIB: ioctl attest enclave is failed\n");
+        return -1;
+    }
+
+    return 0;
+}
