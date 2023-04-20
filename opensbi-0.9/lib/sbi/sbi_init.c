@@ -27,6 +27,7 @@
 #include <sbi/sbi_pmp.h>
 #include <sbi/sbi_version.h>
 #include <sm/sm.h>
+#include <sm/attest.h>
 
 #define BANNER                                              \
 	"   ____                    _____ ____ _____\n"     \
@@ -488,7 +489,7 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 	/* Set MSIE bit to receive IPI */
 	csr_set(CSR_MIE, MIP_MSIP);
 
-    sbi_printf("[sbi_init_warmboot] hart%d waiting for a MSIP interupt\n", hartid);
+    sbi_printf("[sbi_init_warmboot] hart%d is waiting for a MSIP interupt\n", hartid);
 
     /* Qingyu: now just wait for an interupt */
     while (true) {
@@ -496,10 +497,13 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 		wfi();
         cmip = csr_read(CSR_MIP);
         if(cmip & MIP_MSIP){
-            sbi_printf("[sbi_init_warmboot] hart%d wake by MSIP interupt\n", hartid);
+            sbi_printf("[sbi_init_warmboot] hart%d is waked by MSIP interupt, it's time to measure sec_linux\n", hartid);
             break;
         }
 	};
+
+    hash_sec_linux();
+    sbi_printf("[sbi_init_warmboot] Measuremant finished, it's time to wake up sec_linux\n");
 
     csr_write(CSR_MIE, saved_mie);
 

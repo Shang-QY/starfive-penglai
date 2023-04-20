@@ -87,8 +87,8 @@ uintptr_t sm_do_timer_irq(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc);
 
 int check_in_enclave_world();
 
-uintptr_t sm_run_sec_linux(uintptr_t *regs);
+uintptr_t sm_run_sec_linux(uintptr_t tee_sbi_param_ptr);
 
-uintptr_t sm_sttest_sec_linux(uintptr_t report_ptr, uintptr_t nonce);
+uintptr_t sm_attest_sec_linux(uintptr_t report_ptr, uintptr_t nonce);
 
 #endif /* _SM_H */

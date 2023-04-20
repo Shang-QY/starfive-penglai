@@ -4,6 +4,9 @@
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_string.h>
 #include <sm/print.h>
+#include <sm/enclave_args.h>
+
+extern struct tee_sbi_param_t tee_sbi_param;
 
 // initailize Secure Monitor's private key and public key.
 void attest_init()
@@ -134,13 +137,45 @@ int verify_enclave(void* signature_arg, unsigned char *message, int len)
     return ret;
 }
 
-void hash_secure_linux()
+void hash_sec_linux()
 {
     SM3_STATE hash_ctx;
     unsigned char *hash = (unsigned char*)TEE_HASH;
+    unsigned long curr_addr, left_size, counter;
+    int hash_granularity = 1 << 20;
 
     SM3_init(&hash_ctx);
-    SM3_process(&hash_ctx, (unsigned char*)TEE_BASE_ADDR, TEE_SIZE);
+
+    //hash secure linux image
+    sbi_printf("[%s] Start to hash sec-linux image:\n", __func__);
+    curr_addr = tee_sbi_param.bin_loadaddr;
+    left_size = tee_sbi_param.bin_size;
+    counter = 0;
+    while(left_size > hash_granularity){
+        SM3_process(&hash_ctx, (unsigned char*)curr_addr, hash_granularity);
+        curr_addr += hash_granularity;
+        left_size -= hash_granularity;
+        counter++;
+        sbi_printf("[%s] hashed %ld MB, left %ld MB\n", __func__, counter, left_size >> 20);
+    }
+    SM3_process(&hash_ctx, (unsigned char*)curr_addr, (int)left_size);
+    sbi_printf("[%s] Finish sec-linux image hash, total %ld B\n", __func__, tee_sbi_param.bin_size);
+
+    //hash secure linux image
+    sbi_printf("[%s] Start to hash sec-linux dtb:\n", __func__);
+    curr_addr = tee_sbi_param.dtb_loadaddr;
+    left_size = tee_sbi_param.dtb_size;
+    counter = 0;
+    while(left_size > hash_granularity){
+        SM3_process(&hash_ctx, (unsigned char*)curr_addr, hash_granularity);
+        curr_addr += hash_granularity;
+        left_size -= hash_granularity;
+        counter++;
+        sbi_printf("[%s] hashed %ld MB, left %ld MB\n", __func__, counter, left_size >> 20);
+    }
+    SM3_process(&hash_ctx, (unsigned char*)curr_addr, (int)left_size);
+    sbi_printf("[%s] Finish sec-linux dtb hash, total %ld B\n", __func__, tee_sbi_param.dtb_size);
+
     SM3_done(&hash_ctx, hash);
 }
 

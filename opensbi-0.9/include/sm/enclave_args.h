@@ -14,9 +14,8 @@
 #define SM_HASH                (SM_PRI_KEY + PRIVATE_KEY_SIZE)
 #define SM_SIGNATURE           (SM_HASH + HASH_SIZE)
 
-#define TEE_ADDR                0xc0000000
-#define TEE_SIZE                0x1c0000000
-#define TEE_CUSTOM_FIELD_ADDR   0x100000000
+#define TEE_ADDR                0xc0000000UL
+#define TEE_CUSTOM_FIELD_ADDR   0x100000000UL
 #define TEE_CUSTOM_FIELD_SIZE   512
 #define TEE_HASH               (SM_SIGNATURE + SIGNATURE_SIZE)
 
@@ -100,6 +99,14 @@ struct enclave_sbi_param_t
   unsigned long *ecall_arg1;
   unsigned long *ecall_arg2;
   unsigned long *ecall_arg3;
+};
+
+struct tee_sbi_param_t
+{
+    unsigned long bin_size;
+    unsigned long bin_loadaddr;
+    unsigned long dtb_size;
+    unsigned long dtb_loadaddr;
 };
 
 #endif /* _ENCLAVE_ARGS_H */

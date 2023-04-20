@@ -54,7 +54,7 @@ static int sbi_ecall_penglai_host_handler(unsigned long extid, unsigned long fun
 			ret = sm_destroy_enclave((uintptr_t *)regs, regs->a0);
 			break;
         case SBI_SM_RUN_SEC_LINUX:
-            ret = sm_run_sec_linux((uintptr_t *)regs);
+            ret = sm_run_sec_linux(regs->a0);
             break;
         case SBI_SM_ATTEST_SEC_LINUX:
             ret = sm_attest_sec_linux(regs->a0, regs->a1);

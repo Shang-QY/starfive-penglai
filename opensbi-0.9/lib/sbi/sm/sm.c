@@ -1,5 +1,6 @@
 //#include <sm/atomic.h>
 #include <sbi/riscv_atomic.h>
+#include <sbi/sbi_string.h>
 #include <sm/sm.h>
 #include <sm/pmp.h>
 #include <sm/enclave.h>
@@ -10,6 +11,8 @@
 
 //static int sm_initialized = 0;
 //static spinlock_t sm_init_lock = SPINLOCK_INIT;
+
+struct tee_sbi_param_t tee_sbi_param;
 
 void sm_init()
 {
@@ -260,23 +263,37 @@ uintptr_t sm_destroy_enclave(uintptr_t *regs, uintptr_t enclave_id)
   return ret;
 }
 
-uintptr_t sm_run_sec_linux(uintptr_t *regs)
+uintptr_t sm_run_sec_linux(uintptr_t tee_sbi_param_ptr)
 {
-  uintptr_t ret = 0;
+  uintptr_t retval = 0;
+//   uintptr_t upbound = 0xffffffffffffffffULL;
+  printm("[Penglai Monitor] %s invoked\r\n",__func__);
+
+//   if(upbound - tee_sbi_param_ptr < sizeof(struct tee_report_t)
+//             || tee_sbi_param_ptr + sizeof(struct tee_report_t) > TEE_ADDR){
+//     sbi_printf("[Penglai Monitor] %s Error: try to access tee region\r\n",__func__);
+//     retval = -1UL;
+//     goto out;
+//   }
+//   sbi_memcpy(&tee_sbi_param, (void*)tee_sbi_param_ptr, sizeof(struct tee_sbi_param_t));
+  tee_sbi_param.bin_loadaddr = 0xc0200000;
+  tee_sbi_param.bin_size = 100 * (1 << 20);
+  tee_sbi_param.dtb_loadaddr = 0x186000000;
+  tee_sbi_param.dtb_size = 1 << 20;
+
   u32 source_hart = current_hartid();
 
   if (source_hart == 0) {
     // TODO: Qingyu
-    sbi_printf("[sm_rum_sec_linux] Memory isolated, it's time to measure sec_linux\n");
-
-    hash_sec_linux();
-    sbi_printf("[sm_rum_sec_linux] Measuremant finished, it's time to wake up sec_linux\n");
+    sbi_printf("[%s] Memory isolated, it's time to wake up hart1\n", __func__);
 
     sbi_ipi_raw_send(1);
-    sbi_printf("[sm_rum_sec_linux] ipi sended\n");
+    sbi_printf("[%s] ipi sended\n", __func__);
   }
 
-  return ret;
+// out:
+  sbi_printf("[Penglai Monitor] %s return: %ld\r\n",__func__, retval);
+  return retval;
 }
 
 uintptr_t sm_attest_sec_linux(uintptr_t report_ptr, uintptr_t nonce)
@@ -285,7 +302,6 @@ uintptr_t sm_attest_sec_linux(uintptr_t report_ptr, uintptr_t nonce)
   uintptr_t upbound = 0xffffffffffffffffULL;
   sbi_printf("[Penglai Monitor] %s invoked\r\n",__func__);
 
-  struct enclave_t* enclave = NULL;
   struct tee_report_t report;
 
   if(upbound - report_ptr < sizeof(struct tee_report_t)
