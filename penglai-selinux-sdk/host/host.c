@@ -20,6 +20,9 @@ void load_and_run(struct elf_args *enclaveFile, unsigned long bin_loadaddr, stru
 void attest(unsigned long nonce)
 {
     struct PLenclave *enclave = malloc(sizeof(struct PLenclave));
+    struct penglai_enclave_ioctl_attest_tee* attest_param;
+    struct tee_report_t* report;
+    struct tee_sig_message_t* sig_message;
     PLenclave_init(enclave);
 
     if (PLenclave_attest(enclave, nonce) < 0)
@@ -28,15 +31,15 @@ void attest(unsigned long nonce)
     }
 
     printf("***************** ATTEST REPORT *****************\n");
-    struct penglai_enclave_ioctl_attest_tee* attest_param = &enclave->attest_param;
+    attest_param = &enclave->attest_param;
     printf("user input nonce: %lx\n", attest_param->nonce);
-    struct tee_report_t* report = &attest_param->report;
+    report = &attest_param->report;
     printf("sm_signature: \n");
     printHex(report->signature, SIGNATURE_SIZE);
     printf("sm_pub_key: \n");
     printHex(report->sm_pub_key, PUBLIC_KEY_SIZE);
     printf("****************** sig_message ******************\n");
-    struct tee_sig_message_t* sig_message = &report->sig_message;
+    sig_message = &report->sig_message;
     printf("tee_hash: \n");
     printHex(sig_message->hash, HASH_SIZE);
     printf("tee_custom_field: \n");
@@ -179,7 +182,7 @@ static bool cmdline_parse(unsigned int argc, char *argv[], int *mode, const char
 int main(int argc, char **argv)
 {
     printf("Welcome to PENGLAI REE_HOST!\n");
-    struct elf_args *enclaveFile, *dtbFile;
+    struct elf_args *enclaveFile = NULL, *dtbFile = NULL;
 
 	const char *path[8] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 	int res = -1, mode = -1;

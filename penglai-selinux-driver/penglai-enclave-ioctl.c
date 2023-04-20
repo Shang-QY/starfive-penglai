@@ -41,7 +41,7 @@ int penglai_attest_linux(struct file *filep, unsigned long args)
     printk("KERNEL MODULE : ecall attest sec linux\n");
     ret = attest_linux(report, enclave_param->nonce);
     enclave_param->report = *report;
-    
+
     printk("KERNEL MODULE : bye\n");
     kfree(report);
     return ret;
