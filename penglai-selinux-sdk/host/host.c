@@ -28,6 +28,7 @@ void attest(unsigned long nonce)
     if (PLenclave_attest(enclave, nonce) < 0)
     {
         printf("host: failed to attest\n");
+        goto out;
     }
 
     printf("***************** ATTEST REPORT *****************\n");
@@ -49,6 +50,13 @@ void attest(unsigned long nonce)
     printf("****************** sig_message ******************\n");
     printf("***************** ATTEST REPORT *****************\n");
 
+    struct custom_message_t* custom_message = (struct custom_message_t*)&sig_message->custom_field;
+
+    printf("magic: %s", custom_message->magic);
+    printf("ipaddr_info: %s", custom_message->ipaddr_info);
+    printf("pubkey_footprint: %s", custom_message->pubkey_footprint);
+
+out:
     PLenclave_finalize(enclave);
     free(enclave);
 }
