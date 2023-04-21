@@ -1,6 +1,15 @@
 #include "penglai-enclave-ioctl.h"
 #include "syscall.h"
 
+void printHex(unsigned char *c, int n)
+{
+	int i;
+	for (i = 0; i < n; i+=16) {
+		printk("0x%02X, 0x%02X, 0x%02X, 0x%02X,  0x%02X, 0x%02X, 0x%02X, 0x%02X,  0x%02X, 0x%02X, 0x%02X, 0x%02X,  0x%02X, 0x%02X, 0x%02X, 0x%02X, ", 
+            c[i], c[i+1], c[i+2], c[i+3], c[i+4], c[i+5], c[i+6], c[i+7], c[i+8], c[i+9], c[i+10], c[i+11], c[i+12], c[i+13], c[i+14], c[i+15]);
+	}
+}
+
 int penglai_load_and_run_linux(struct file *filep, unsigned long args)
 {
     struct penglai_enclave_user_param *enclave_param = (struct penglai_enclave_user_param *)args;
@@ -40,6 +49,10 @@ int penglai_attest_linux(struct file *filep, unsigned long args)
     printk("KERNEL MODULE : hello qy\n");
     printk("KERNEL MODULE : ecall attest sec linux\n");
     ret = attest_linux(report, enclave_param->nonce);
+    if(ret == -2UL){
+        printk("KERNEL MODULE : TEE haven't finished boot yet\n");
+    }
+
     enclave_param->report = *report;
 
     printk("KERNEL MODULE : bye\n");

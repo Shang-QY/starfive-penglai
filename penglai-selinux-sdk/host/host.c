@@ -56,6 +56,12 @@ void attest(unsigned long nonce)
     printf("ipaddr_info: %s", custom_message->ipaddr_info);
     printf("pubkey_footprint: %s", custom_message->pubkey_footprint);
 
+    if(write_data_to_file("digital_report.txt", "wb", (unsigned char *)report, sizeof(struct tee_report_t), 0) != 0){
+        printf("failed to write digital report to digital_report.txt\n");
+    } else {
+        printf("success to write digital report to digital_report.txt\n");
+    }
+
 out:
     PLenclave_finalize(enclave);
     free(enclave);

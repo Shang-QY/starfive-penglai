@@ -300,6 +300,8 @@ uintptr_t sm_attest_sec_linux(uintptr_t report_ptr, uintptr_t nonce)
 {
   uintptr_t retval = 0;
   uintptr_t upbound = 0xffffffffffffffffULL;
+  char magic[16] = {0};
+
   sbi_printf("[Penglai Monitor] %s invoked\r\n",__func__);
 
   struct tee_report_t report;
@@ -308,6 +310,12 @@ uintptr_t sm_attest_sec_linux(uintptr_t report_ptr, uintptr_t nonce)
             || report_ptr + sizeof(struct tee_report_t) > TEE_ADDR){
     sbi_printf("[Penglai Monitor] %s Error: try to access tee region\r\n",__func__);
     retval = -1UL;
+    goto out;
+  }
+
+  sbi_strcpy(magic, "TEE running\n");
+  if(sbi_memcmp((void*)magic, (void*)TEE_CUSTOM_FIELD_ADDR, 16)){
+    retval = -2UL;
     goto out;
   }
 
