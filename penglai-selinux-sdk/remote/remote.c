@@ -26,6 +26,7 @@ int main(){
     printf("Hello Remote\n");
 
     struct tee_report_t report;
+    struct custom_message_t* custom_message;
     int pass_auth = 1;
 
     printf("read digital report from digital_report.txt\n");
@@ -47,8 +48,14 @@ int main(){
     }
 
     if(pass_auth){
-        printf("[Remote] Authentication passed.");
+        printf("[Remote] Authentication passed.\n");
+        printf("[Remote] Print custom field:\n");
+        custom_message = (struct custom_message_t*)&report.sig_message.custom_field;
+
+        printf("[Remote] magic: %s", custom_message->magic);
+        printf("[Remote] ipaddr_info: %s", custom_message->ipaddr_info);
+        printf("[Remote] pubkey_footprint: %s", custom_message->pubkey_footprint);
     } else {
-        printf("[Remote] Authentication failed.");
+        printf("[Remote] Authentication failed.\n");
     }
 }
