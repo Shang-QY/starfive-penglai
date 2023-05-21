@@ -1,0 +1,21 @@
+##
+## Author: Shang Qingyu
+## Description:
+## 	 compile sign tool need openssl 3.0.0 installation.
+
+CC = gcc
+CUR_SOURCE = ${wildcard *.c}
+
+GM_LIBS = gm/sm2.a gm/miracl.a
+GM_LIB_INCLUDE_DIR = gm/include
+HOST_LIB_INCLUDE_DIR = ../lib/include/
+
+CFLAGS += -I $(HOST_LIB_INCLUDE_DIR) -I $(GM_LIB_INCLUDE_DIR)
+
+all: penglai_sign
+
+penglai_sign: $(CUR_SOURCE) $(GM_LIBS)
+	$(CC) $(CFLAGS) -o $@ $^ -L /usr/local/lib -lssl -lcrypto -ldl -lpthread
+
+clean:
+	rm -f *.o penglai_sign
