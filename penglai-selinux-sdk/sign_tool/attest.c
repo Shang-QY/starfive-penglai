@@ -1,4 +1,5 @@
 #include "attest.h"
+#include "util.h"
 #include "SM3.h"
 #include "SM2_sv.h"
 #include <string.h>
@@ -14,6 +15,9 @@ int hash_sec_linux(struct penglai_enclave_user_param *user_param, enclave_css_t 
     SM3_init(&hash_ctx);
 
     //hash secure linux image
+    printf("[%s] hash sec-linux image load address: %lx\n", __func__, user_param->bin_loadaddr);
+    SM3_process(&hash_ctx, (unsigned char*)&user_param->bin_loadaddr, sizeof(unsigned long));
+
     printf("[%s] Start to hash sec-linux image:\n", __func__);
     curr_addr = user_param->bin_ptr;
     left_size = user_param->bin_size;
@@ -29,6 +33,9 @@ int hash_sec_linux(struct penglai_enclave_user_param *user_param, enclave_css_t 
     printf("[%s] Finish sec-linux image hash, total %ld B\n", __func__, user_param->bin_size);
 
     //hash secure dtb
+    printf("[%s] hash sec-linux dtb load address: %lx\n", __func__, user_param->dtb_loadaddr);
+    SM3_process(&hash_ctx, (unsigned char*)&user_param->dtb_loadaddr, sizeof(unsigned long));
+
     printf("[%s] Start to hash sec-linux dtb:\n", __func__);
     curr_addr = user_param->dtb_ptr;
     left_size = user_param->dtb_size;

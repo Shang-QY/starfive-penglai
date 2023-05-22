@@ -266,20 +266,16 @@ uintptr_t sm_destroy_enclave(uintptr_t *regs, uintptr_t enclave_id)
 uintptr_t sm_run_sec_linux(uintptr_t tee_sbi_param_ptr)
 {
   uintptr_t retval = 0;
-//   uintptr_t upbound = 0xffffffffffffffffULL;
+  uintptr_t upbound = 0xffffffffffffffffULL;
   printm("[Penglai Monitor] %s invoked\r\n",__func__);
 
-//   if(upbound - tee_sbi_param_ptr < sizeof(struct tee_report_t)
-//             || tee_sbi_param_ptr + sizeof(struct tee_report_t) > TEE_ADDR){
-//     sbi_printf("[Penglai Monitor] %s Error: try to access tee region\r\n",__func__);
-//     retval = -1UL;
-//     goto out;
-//   }
-//   sbi_memcpy(&tee_sbi_param, (void*)tee_sbi_param_ptr, sizeof(struct tee_sbi_param_t));
-  tee_sbi_param.bin_loadaddr = 0xc0200000;
-  tee_sbi_param.bin_size = 100 * (1 << 20);
-  tee_sbi_param.dtb_loadaddr = 0x186000000;
-  tee_sbi_param.dtb_size = 1 << 20;
+  if(upbound - tee_sbi_param_ptr < sizeof(struct tee_sbi_param_t)
+            || tee_sbi_param_ptr + sizeof(struct tee_sbi_param_t) > TEE_ADDR){
+    sbi_printf("[Penglai Monitor] %s Error: try to access tee region\r\n",__func__);
+    retval = -1UL;
+    goto out;
+  }
+  sbi_memcpy(&tee_sbi_param, (void*)tee_sbi_param_ptr, sizeof(struct tee_sbi_param_t));
 
   u32 source_hart = current_hartid();
 
@@ -291,7 +287,7 @@ uintptr_t sm_run_sec_linux(uintptr_t tee_sbi_param_ptr)
     sbi_printf("[%s] ipi sended\n", __func__);
   }
 
-// out:
+out:
   sbi_printf("[Penglai Monitor] %s return: %ld\r\n",__func__, retval);
   return retval;
 }

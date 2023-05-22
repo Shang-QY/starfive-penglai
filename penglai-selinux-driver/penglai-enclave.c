@@ -1,12 +1,12 @@
 #include "penglai-enclave.h"
 #include "penglai-enclave-ioctl.h"
 
-int run_linux(void)
+int run_linux(struct tee_sbi_param_t *tee_sbi_param)
 {
 	struct sbiret ret = {0};
 	int retval;
 
-	ret = SBI_CALL_0(SBI_SM_RUN_SEC_LINUX);
+	ret = SBI_CALL_1(SBI_SM_RUN_SEC_LINUX, __pa(tee_sbi_param));
 	if (ret.error)
 	{
 		printk("KERNEL MODULE: sbi call run secure linux is failed \n");

@@ -59,13 +59,15 @@ struct tee_report_t
   unsigned char sm_pub_key[PUBLIC_KEY_SIZE];
 };
 
-struct signature_t
+struct tee_sbi_param_t
 {
-  unsigned char r[PUBLIC_KEY_SIZE/2];
-  unsigned char s[PUBLIC_KEY_SIZE/2];
+    unsigned long bin_size;
+    unsigned long bin_loadaddr;
+    unsigned long dtb_size;
+    unsigned long dtb_loadaddr;
 };
 
-int run_linux(void);
+int run_linux(struct tee_sbi_param_t *tee_sbi_param);
 
 int attest_linux(struct tee_report_t *report, unsigned long nonce);
 

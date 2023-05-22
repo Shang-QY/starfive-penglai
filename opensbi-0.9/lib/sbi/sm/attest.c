@@ -147,6 +147,9 @@ void hash_sec_linux()
     SM3_init(&hash_ctx);
 
     //hash secure linux image
+    sbi_printf("[%s] hash sec-linux image load address: %lx\n", __func__, tee_sbi_param.bin_loadaddr);
+    SM3_process(&hash_ctx, (unsigned char*)&tee_sbi_param.bin_loadaddr, sizeof(unsigned long));
+
     sbi_printf("[%s] Start to hash sec-linux image:\n", __func__);
     curr_addr = tee_sbi_param.bin_loadaddr;
     left_size = tee_sbi_param.bin_size;
@@ -161,7 +164,10 @@ void hash_sec_linux()
     SM3_process(&hash_ctx, (unsigned char*)curr_addr, (int)left_size);
     sbi_printf("[%s] Finish sec-linux image hash, total %ld B\n", __func__, tee_sbi_param.bin_size);
 
-    //hash secure linux image
+    //hash secure linux dtb
+    sbi_printf("[%s] hash sec-linux dtb load address: %lx\n", __func__, tee_sbi_param.dtb_loadaddr);
+    SM3_process(&hash_ctx, (unsigned char*)&tee_sbi_param.dtb_loadaddr, sizeof(unsigned long));
+
     sbi_printf("[%s] Start to hash sec-linux dtb:\n", __func__);
     curr_addr = tee_sbi_param.dtb_loadaddr;
     left_size = tee_sbi_param.dtb_size;

@@ -15,6 +15,7 @@ int penglai_load_and_run_linux(struct file *filep, unsigned long args)
     struct penglai_enclave_user_param *enclave_param = (struct penglai_enclave_user_param *)args;
     unsigned long payload_bin_start = (unsigned long)(__va(enclave_param->bin_loadaddr));
     unsigned long payload_dtb_start = (unsigned long)(__va(enclave_param->dtb_loadaddr));
+    struct tee_sbi_param_t *tee_sbi_param = kmalloc(sizeof(struct tee_sbi_param_t), GFP_KERNEL);
     int ret;
 
     printk("KERNEL MODULE : hello qy\n");
@@ -22,21 +23,29 @@ int penglai_load_and_run_linux(struct file *filep, unsigned long args)
     if(copy_from_user((void*)payload_bin_start, (void*)enclave_param->bin_ptr, enclave_param->bin_size))
 	{
 		printk("KERNEL MODULE : bin copy from the user is failed\n");
-		return -EFAULT;
+		ret = -EFAULT;
+        goto out;
 	}
 
     printk("KERNEL MODULE : load linux dtb: linear va: 0x%lx, and pa: 0x%lx\n", payload_dtb_start, (unsigned long)(__pa(payload_dtb_start)));
     if(copy_from_user((void*)payload_dtb_start, (void*)enclave_param->dtb_ptr, enclave_param->dtb_size))
 	{
 		printk("KERNEL MODULE : dtb copy from the user is failed\n");
-		return -EFAULT;
+		ret = -EFAULT;
+        goto out;
 	}
 
     printk("KERNEL MODULE : ecall run sec linux\n");
-    ret = run_linux();
-    
+    tee_sbi_param->bin_loadaddr = enclave_param->bin_loadaddr;
+    tee_sbi_param->bin_size = enclave_param->bin_size;
+    tee_sbi_param->dtb_loadaddr = enclave_param->dtb_loadaddr;
+    tee_sbi_param->dtb_size = enclave_param->dtb_size;
+    ret = run_linux(tee_sbi_param);
+
     printk("KERNEL MODULE : bye\n");
 
+out:
+    kfree(tee_sbi_param);
     return ret;
 }
 

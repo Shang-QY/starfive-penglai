@@ -63,7 +63,8 @@ Step 2: 使用`penglai_sign` 生成签名文件。
 
 ```
 cd test_dir
-./penglai_sign sign \
+
+../penglai_sign sign \
         -image sec-image -imageaddr 0xc0200000 \
         -dtb sec-dtb.dtb -dtbaddr 0x186000000 \
         -key SM2PrivateKey.pem -out ccs-file
