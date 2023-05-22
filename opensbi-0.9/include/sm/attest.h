@@ -17,4 +17,6 @@ void hash_sec_linux();
 
 void sign_sec_linux(void* signature, unsigned char *message, int len);
 
+int auth_sec_linux();
+
 #endif /* _ATTEST_H */

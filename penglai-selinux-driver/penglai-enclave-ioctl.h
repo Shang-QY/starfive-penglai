@@ -18,6 +18,8 @@ struct penglai_enclave_user_param
     unsigned long dtb_ptr;
     unsigned long dtb_size;
     unsigned long dtb_loadaddr;
+    unsigned long css_ptr;
+    unsigned long css_size;
 };
 
 struct penglai_enclave_ioctl_attest_tee

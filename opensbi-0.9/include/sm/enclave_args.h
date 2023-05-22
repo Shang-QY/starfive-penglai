@@ -101,12 +101,22 @@ struct enclave_sbi_param_t
   unsigned long *ecall_arg3;
 };
 
+/****************************************************************************
+* Definitions for enclave signature
+****************************************************************************/
+typedef struct _enclave_css_t {        /* 160 bytes */
+    unsigned char enclave_hash[HASH_SIZE];          /* (32) */
+    unsigned char signature[SIGNATURE_SIZE];        /* (64) */
+    unsigned char user_pub_key[PUBLIC_KEY_SIZE];    /* (64) */
+} enclave_css_t;
+
 struct tee_sbi_param_t
 {
     unsigned long bin_size;
     unsigned long bin_loadaddr;
     unsigned long dtb_size;
     unsigned long dtb_loadaddr;
+    enclave_css_t enclave_css;
 };
 
 #endif /* _ENCLAVE_ARGS_H */

@@ -3,12 +3,13 @@
 #include <assert.h>
 #include <stdlib.h>
 
-void load_and_run(struct elf_args *enclaveFile, unsigned long bin_loadaddr, struct elf_args *dtbFile, unsigned long dtb_loadaddr)
+void load_and_run(struct elf_args *enclaveFile, unsigned long bin_loadaddr,
+                  struct elf_args *dtbFile, unsigned long dtb_loadaddr, struct elf_args *cssFile)
 {
     struct PLenclave *enclave = malloc(sizeof(struct PLenclave));
     PLenclave_init(enclave);
 
-    if (PLenclave_load_and_run(enclave, enclaveFile, bin_loadaddr, dtbFile, dtb_loadaddr) < 0)
+    if (PLenclave_load_and_run(enclave, enclaveFile, bin_loadaddr, dtbFile, dtb_loadaddr, cssFile) < 0)
     {
         printf("host: failed to create enclave\n");
     }
@@ -94,12 +95,14 @@ static bool cmdline_parse(unsigned int argc, char *argv[], int *mode, const char
         {"-imageaddr", NULL, PAR_REQUIRED},
         {"-dtb", NULL, PAR_REQUIRED},
         {"-dtbaddr", NULL, PAR_REQUIRED},
+        {"-cssfile", NULL, PAR_REQUIRED},
         {"-nonce", NULL, PAR_INVALID}};
     param_struct_t params_attest[] = {
         {"-image", NULL, PAR_INVALID},
         {"-imageaddr", NULL, PAR_INVALID},
         {"-dtb", NULL, PAR_INVALID},
         {"-dtbaddr", NULL, PAR_INVALID},
+        {"-cssfile", NULL, PAR_INVALID},
         {"-nonce", NULL, PAR_REQUIRED}};
 
     const char *mode_m[] ={"run", "attest"};
@@ -196,7 +199,7 @@ static bool cmdline_parse(unsigned int argc, char *argv[], int *mode, const char
 int main(int argc, char **argv)
 {
     printf("Welcome to PENGLAI REE_HOST!\n");
-    struct elf_args *enclaveFile = NULL, *dtbFile = NULL;
+    struct elf_args *enclaveFile = NULL, *dtbFile = NULL, *ccsFile = NULL;
 
 	const char *path[8] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 	int res = -1, mode = -1;
@@ -234,7 +237,16 @@ int main(int argc, char **argv)
             goto clear_return;
         }
 
-        load_and_run(enclaveFile, bin_loadaddr, dtbFile, dtb_loadaddr);
+        const char *cssfile = path[CCSFILE];
+        ccsFile = malloc(sizeof(struct elf_args));
+        elf_args_init(ccsFile, cssfile);
+        if (!elf_valid(ccsFile))
+        {
+            printf("error when initializing enclaveFile\n");
+            goto clear_return;
+        }
+
+        load_and_run(enclaveFile, bin_loadaddr, dtbFile, dtb_loadaddr, ccsFile);
     }
     else if(mode == ATTEST)
     {

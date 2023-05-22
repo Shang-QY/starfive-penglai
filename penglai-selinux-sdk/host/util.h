@@ -17,6 +17,8 @@
     "                          It is a required option for \"run\"\n"\
     "   -dtbaddr               Specify the load address of the device tree\n"\
     "                          It is a required option for \"run\"\n"\
+    "   -cssfile               Specify the Cryper Certificate Struct file of the TEE soltware\n"\
+    "                          It is a required option for \"run\"\n"\
     "   -nonce                 Specify the challenging nonce\n" \
     "                          It is a required option for \"attest\"\n" \
     "Run \"host -help\" to get this help and exit.\n"
@@ -33,6 +35,7 @@ typedef enum _file_path_t
     IMAGE_LDADDR,
     DTB_FILE,
     DTB_LDADDR,
+    CCSFILE,
     NONCE
 } file_path_t;
 

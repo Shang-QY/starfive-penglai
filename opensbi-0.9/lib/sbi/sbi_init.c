@@ -489,21 +489,29 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 	/* Set MSIE bit to receive IPI */
 	csr_set(CSR_MIE, MIP_MSIP);
 
-    sbi_printf("[sbi_init_warmboot] hart%d is waiting for a MSIP interupt\n", hartid);
-
-    /* Qingyu: now just wait for an interupt */
     while (true) {
-        sbi_printf("[sbi_init_warmboot] hart%d ready to enter wfi\n", hartid);
-		wfi();
-        cmip = csr_read(CSR_MIP);
-        if(cmip & MIP_MSIP){
-            sbi_printf("[sbi_init_warmboot] hart%d is waked by MSIP interupt, it's time to measure sec_linux\n", hartid);
+        sbi_printf("[sbi_init_warmboot] hart%d is waiting for a MSIP interupt\n", hartid);
+
+        /* Qingyu: now just wait for an interupt */
+        while (true) {
+            sbi_printf("[sbi_init_warmboot] hart%d ready to enter wfi\n", hartid);
+            wfi();
+            cmip = csr_read(CSR_MIP);
+            if(cmip & MIP_MSIP){
+                sbi_printf("[sbi_init_warmboot] hart%d is waked by MSIP interupt, it's time to measure sec_linux\n", hartid);
+                break;
+            }
+        };
+
+        hash_sec_linux();
+        sbi_printf("[sbi_init_warmboot] Measuremant finished, it's time to verify the Cryper Certificate Struct\n");
+
+        // pass authentication
+        if(auth_sec_linux() == 0){
+            sbi_printf("[sbi_init_warmboot] Authenticate succeed, it's time to start sec_linux\n");
             break;
         }
-	};
-
-    hash_sec_linux();
-    sbi_printf("[sbi_init_warmboot] Measuremant finished, it's time to wake up sec_linux\n");
+    }
 
     csr_write(CSR_MIE, saved_mie);
 

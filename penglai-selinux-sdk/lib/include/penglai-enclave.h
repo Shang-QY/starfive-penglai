@@ -33,6 +33,8 @@ struct penglai_enclave_user_param
     unsigned long dtb_ptr;
     unsigned long dtb_size;
     unsigned long dtb_loadaddr;
+    unsigned long css_ptr;
+    unsigned long css_size;
 };
 
 #define PRIVATE_KEY_SIZE       32
@@ -89,6 +91,7 @@ struct PLenclave
 {
     struct elf_args *bin_file;
     struct elf_args *dtb_file;
+    struct elf_args *css_file;
     int fd;
     struct penglai_enclave_user_param user_param;
     struct penglai_enclave_ioctl_attest_tee attest_param;
@@ -96,7 +99,9 @@ struct PLenclave
 
 void PLenclave_init(struct PLenclave *PLenclave);
 void PLenclave_finalize(struct PLenclave *PLenclave);
-int PLenclave_load_and_run(struct PLenclave *PLenclave, struct elf_args *u_bin_file, unsigned long bin_loadaddr, struct elf_args *u_dtb_file, unsigned long dtb_loadaddr);
+int PLenclave_load_and_run(struct PLenclave *PLenclave,
+                           struct elf_args *u_bin_file, unsigned long bin_loadaddr,
+                           struct elf_args *u_dtb_file, unsigned long dtb_loadaddr, struct elf_args *cssFile);
 int PLenclave_attest(struct PLenclave *PLenclave, unsigned long nonce);
 
 #endif

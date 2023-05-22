@@ -35,11 +35,26 @@ int penglai_load_and_run_linux(struct file *filep, unsigned long args)
         goto out;
 	}
 
+    printk("KERNEL MODULE : load css file\n");
+    if(enclave_param->dtb_size < sizeof(enclave_css_t))
+    {
+        printk("KERNEL MODULE : css file is too small\n");
+        ret = -EFAULT;
+        goto out;
+    }
+    if(copy_from_user(&(tee_sbi_param->enclave_css), (void*)enclave_param->css_ptr, sizeof(enclave_css_t)))
+    {
+        printk("KERNEL MODULE : css copy from the user is failed\n");
+		ret = -EFAULT;
+        goto out;
+    }
+
     printk("KERNEL MODULE : ecall run sec linux\n");
     tee_sbi_param->bin_loadaddr = enclave_param->bin_loadaddr;
     tee_sbi_param->bin_size = enclave_param->bin_size;
     tee_sbi_param->dtb_loadaddr = enclave_param->dtb_loadaddr;
     tee_sbi_param->dtb_size = enclave_param->dtb_size;
+
     ret = run_linux(tee_sbi_param);
 
     printk("KERNEL MODULE : bye\n");
