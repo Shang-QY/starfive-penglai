@@ -2,7 +2,6 @@
 #define _ATTEST_H
 
 #include "penglai-enclave.h"
-#include "penglai-enclave-page.h"
 
 /****************************************************************************
 * Definitions for enclave signature
@@ -13,10 +12,10 @@ typedef struct _enclave_css_t {        /* 160 bytes */
     unsigned char user_pub_key[PUBLIC_KEY_SIZE];    /* (64) */
 } enclave_css_t;
 
-void hash_enclave(unsigned long entry_point, enclave_mem_t* enclave_mem, void* hash, uintptr_t nonce_arg);
+int hash_sec_linux(struct penglai_enclave_user_param *user_param, enclave_css_t *enclave_css);
 
-void sign_enclave(struct signature_t* signature, unsigned char *message, int len, unsigned char *prikey);
+void sign_sec_linux(void* signature, unsigned char *message, int len, unsigned char *prikey_arg);
 
-int verify_enclave(struct signature_t* signature, unsigned char *message, int len, unsigned char *pubkey);
+int verify_sec_linux(void* signature, unsigned char *message, int len, unsigned char *prikey_arg);
 
 #endif

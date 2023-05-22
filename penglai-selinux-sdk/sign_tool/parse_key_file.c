@@ -327,7 +327,7 @@ void generate_sm2_sig(){
     // EVP_PKEY_get_raw_public_key(pkey, pubkey, &pub_len);
     // printf("pub_key len: %d\n", pub_len);
     // printHex(pubkey, PUBLIC_KEY_SIZE);
-    if(verify_enclave((struct signature_t*)sig, hash, HASH_SIZE, pubkey) == 0){
+    if(verify_sec_linux((void *)sig, hash, HASH_SIZE, pubkey) == 0){
         printf("verify gm lib successfully\n");
     } else {
         printf("verify gm lib fail\n");
