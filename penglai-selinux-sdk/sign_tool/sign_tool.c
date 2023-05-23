@@ -290,6 +290,10 @@ int main(int argc, char* argv[])
         res = 0;
         goto clear_return;
     }
+    else if(mode == DUMP)
+    {
+        printf("DUMP not support now\n");
+    }
 	// else if(mode == DUMP)
     // {
     //     // dump metadata info
@@ -346,6 +350,14 @@ int main(int argc, char* argv[])
         //     goto clear_return;
         // }
 	}
+    else if(mode == GENDATA)
+    {
+        printf("GENDATA not support now\n");
+    }
+    else if(mode == CATSIG)
+    {
+        printf("CATSIG not support now\n");
+    }
     // else if(mode == GENDATA)
     // {
     //     printf("GENDATA enclave: %s, output: %s, \n", path[ELF], path[OUTPUT]);

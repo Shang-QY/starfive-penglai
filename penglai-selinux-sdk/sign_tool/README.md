@@ -2,10 +2,10 @@
 
 ### 1. 编译：
 
-编译penglai sign tool 需要首先在docker 中编译gm国密算法库，接着在安装有openssl 3.0.0的RICS-V qemu中编译sign tool 工具。在SDK编译过程中即可编译gm库，之后进入RISC-V qemu中的sign tool 目录编译。
+Penglai sign_tool 需要在安装有OpenSSL 3.0.0的平台上编译（OpenSSL 从 v3.0.0 开始才支持国密算法）。Penglai sign_tool 与 OpenSSL 对接，能够处理用户经OpenSSL 命令行工具生成的标准密钥文件和签名文件。
 
 ```
-cd sdk && SDK=$(pwd) && cd sign_tool/ && PENGLAI_SDK=$SDK make
+cd sign_tool/ && make
 ```
 
 获得的二进制为`penglai_sign`
@@ -59,7 +59,7 @@ openssl genpkey -genparam -algorithm EC -out ecp.pem \
 openssl genpkey -paramfile ecp.pem -out SM2PrivateKey.pem
 ```
 
-Step 2: 使用`penglai_sign` 生成签名文件。
+Step 2: 使用`penglai_sign` 生成开发者数字签名证书`ccs-file`。
 
 ```
 cd test_dir
@@ -70,23 +70,26 @@ cd test_dir
         -key SM2PrivateKey.pem -out ccs-file
 ```
 
-#### 2.2 签名信息转录
+#### 2.2 签名信息转录（目前未实现！不支持测试）
 
 Method 1: 在生成签名文件的过程中，可使用`-dumpfile` 参数指定要将签名信息转录到的文件，如单步签名中：
 
 ```
-./penglai_sign sign -enclave prime -key SM2PrivateKey.pem -out prime-signed -dumpfile dump-file
+../penglai_sign sign \
+        -image sec-image -imageaddr 0xc0200000 \
+        -dtb sec-dtb.dtb -dtbaddr 0x186000000 \
+        -key SM2PrivateKey.pem -out ccs-file -dumpfile dump-file
 ```
 
 Method 2: 使用dump命令转录已被签名的文件中的签名信息：
 
 ```
-./penglai_sign dump -enclave prime-signed -dumpfile dump-file
+./penglai_sign dump -ccsfile ccs-file -dumpfile dump-file
 ```
 
-通过如上方法可得到长度为160 byte 的文件`dump-file` ，其中包含enclave的元数据信息（配置、测量及签名等），可用于向"蓬莱"或第三方认证机构提交白名单申请。为了确认飞地开发者身份，用于审计和追责，蓬莱的`launch enclave` 在生产模式下只允许启动白名单中开发者的飞地。
+通过如上方法可得到文件`dump-file` ，其中包含TEE的元数据信息（配置、度量及开发者签名等），采用可阅读的文本形式，可用于向"蓬莱"提交白名单申请。
 
-#### 2.3 两步签名
+#### 2.3 两步签名（目前未实现！不支持测试）
 
 两步签名考虑到开发者或应用服务提供商的私钥需要严格保护，不能以明文用于签名工具的输入。
 
@@ -107,7 +110,10 @@ openssl ec -in SM2PrivateKey.pem -pubout -out SM2PublicKey.pem
 Step 2: 需要得到待签名enclave 的签名材料，在受保护的环境中如HSM（硬件安全模块）中用私钥进行签名，最后用公钥和签名后的材料来得到签名文件。
 ```
 # 使用签名工具得到待签名enclave 的签名材料
-./penglai_sign gendata -enclave prime -out metadata-file
+../penglai_sign gendata \
+        -image sec-image -imageaddr 0xc0200000 \
+        -dtb sec-dtb.dtb -dtbaddr 0x186000000 \
+        -out metadata-file
 
 # 通过openssl 3.0用私钥进行签名（验签），此处someid是SM2国标中规定的签名者id，可用邮箱
 openssl pkeyutl -sign -in metadata-file -inkey SM2PrivateKey.pem -out sig-file -rawin -digest sm3 \
@@ -116,28 +122,23 @@ openssl pkeyutl -verify -in metadata-file -inkey SM2PrivateKey.pem -sigfile sig-
     -rawin -digest sm3 -pkeyopt distid:someid
 ```
 
-Step 3: 使用签名文件和公钥为原enclave 文件添加签名信息 ，该命令需要输入原enclave 文件对签名材料进行验证
+Step 3: 使用签名文件和公钥生成开发者数字签名证书`ccs-file` ，该命令执行过程使用输入的原镜像文件对签名材料正确性进行验证。
 
 ```
-./penglai_sign catsig -enclave prime -key SM2PublicKey.pem -unsigned metadata-file -sig sig-file \
-    -out prime-signed
+./penglai_sign catsig \
+        -image sec-image -imageaddr 0xc0200000 \
+        -dtb sec-dtb.dtb -dtbaddr 0x186000000 \
+        -key SM2PublicKey.pem -unsigned metadata-file -sig sig-file \
+        -out ccs-file
 ```
-
-***Note:*** 目前，蓬莱内部的密码算法使用gm算法库，经测试该算法库无法验证使用openssl 的签名，认为是密码库内部实现上有差别（已排除密钥、摘要输入格式的问题），所以两步签名得到的签名文件无法通过Secure Monitor 的验证。两步签名的正确性留给Secure Monitor移植openssl 密码库后解决。
-
 
 
 ### 3. 补充openssl 的说明
 
-目前penglai sign_tool对 openssl 的依赖在于需要用openssl 的PEM decoder和DER decoder，相应逻辑涉及base64转byte array，提取算法国际标号等。PEM decoder和DER decoder逻辑相对固定，可独立openssl 进行实现。
-
-但是，（1）经过hack openssl的代码，发现同等输入条件下openssl 的签名不能被gm 库验证通过，可能gm 库存在问题，于是将尝试用openssl 替换gm 库。（2）在国密标准中，使用SM2做签名时需添加z值作为原文件前缀，再进行hash和计算，这些内容都需要独立实现，不能保证正确性。
-
-用openssl 签名（验证）hash：（SM2的hash 要求为32 位byte array）
+用openssl 签名/验证 hash：（SM2的hash 要求为32 位byte array）
 
 ```
 openssl pkeyutl -sign -inkey eckey.pem -in hash-file -out sig-file
 
 openssl pkeyutl -verify -in hash-file -pubin -inkey pub_key.pem -sigfile sig-file
 ```
-
