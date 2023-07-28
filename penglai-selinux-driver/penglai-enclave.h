@@ -78,7 +78,7 @@ struct tee_sbi_param_t
     enclave_css_t enclave_css;
 };
 
-int load_linux();
+int load_linux(void);
 
 int run_linux(struct tee_sbi_param_t *tee_sbi_param);
 
