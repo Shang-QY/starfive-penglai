@@ -190,6 +190,168 @@ int domain_pmp_configure(struct domain_t *curr_domain,
 	return 0;
 }
 
+// grant sys_manager access to specific domain memregion to load images
+int grant_manager_access(unsigned int domain_id)
+{
+	struct sbi_domain_memregion *reg;
+	struct sbi_domain *dom;
+	unsigned int pmp_idx = 0, pmp_flags, pmp_bits;
+	unsigned long pmp_addr, pmp_addr_max	      = 0;
+
+    // check if hart is in sys_manager domain
+    unsigned int this_hart = current_hartid();
+	int curr_domainid      = hartid_to_curr_domainid[this_hart];
+	if (curr_domainid != -1) {
+		sbi_printf(
+			"SBI Error: call %s but not in sys_manager_domain\n", __func__);
+        return -1;
+	}
+
+	pmp_bits     = PMP_ADDR_BITS - 1;
+	pmp_addr_max = (1UL << pmp_bits) | ((1UL << pmp_bits) - 1);
+
+    // set target_domain PMP region registers
+    dom = domain_table[domain_id].sbi_domain;
+	sbi_domain_for_each_memregion(dom, reg)
+	{
+		if (NPMP <= pmp_idx)
+			break;
+
+		pmp_flags = 0;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_READABLE)
+			pmp_flags |= PMP_R;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_WRITEABLE)
+			pmp_flags |= PMP_W;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_EXECUTABLE)
+			pmp_flags |= PMP_X;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_MMODE)
+			pmp_flags |= PMP_L;
+
+		pmp_addr = reg->base >> PMP_SHIFT;
+		if (PMP_GRAN_LOG2 <= reg->order && pmp_addr < pmp_addr_max)
+			pmp_set(pmp_idx++, pmp_flags, reg->base,
+				reg->order);
+		else {
+			sbi_printf("Can not configure pmp for domain %s",
+				   dom->name);
+			sbi_printf(
+				"because memory region address %lx or size %lx is not in range\n",
+				reg->base, reg->order);
+		}
+	}
+
+    // set sys_manager PMP region registers(using high number regs)
+	dom = sys_manager_domain.sbi_domain;
+    sbi_domain_for_each_memregion(dom, reg)
+	{
+		if (NPMP <= pmp_idx) {
+            sbi_printf(
+			    "SBI Warning: %s PMP register is not enough\n", __func__);
+            break;
+        }
+
+		pmp_flags = 0;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_READABLE)
+			pmp_flags |= PMP_R;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_WRITEABLE)
+			pmp_flags |= PMP_W;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_EXECUTABLE)
+			pmp_flags |= PMP_X;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_MMODE)
+			pmp_flags |= PMP_L;
+
+		pmp_addr = reg->base >> PMP_SHIFT;
+		if (PMP_GRAN_LOG2 <= reg->order && pmp_addr < pmp_addr_max)
+			pmp_set(pmp_idx++, pmp_flags, reg->base,
+				reg->order);
+		else {
+			sbi_printf("Can not configure pmp for domain %s",
+				   dom->name);
+			sbi_printf(
+				"because memory region address %lx or size %lx is not in range\n",
+				reg->base, reg->order);
+		}
+	}
+
+	return 0;
+}
+
+// retrieve sys_manager access to specific domain memregion
+int retrieve_manager_access(unsigned int domain_id)
+{
+	struct sbi_domain_memregion *reg;
+	struct sbi_domain *dom;
+	unsigned int pmp_idx = 0, pmp_flags, pmp_bits;
+	unsigned long pmp_addr, pmp_addr_max	      = 0;
+
+    // check if hart is in sys_manager domain
+    unsigned int this_hart = current_hartid();
+	int curr_domainid      = hartid_to_curr_domainid[this_hart];
+	if (curr_domainid != -1) {
+		sbi_printf(
+			"SBI Error: call %s but not in sys_manager_domain\n", __func__);
+        return -1;
+	}
+
+	pmp_bits     = PMP_ADDR_BITS - 1;
+	pmp_addr_max = (1UL << pmp_bits) | ((1UL << pmp_bits) - 1);
+
+    // clear target_domain PMP region registers
+    dom = domain_table[domain_id].sbi_domain;
+	sbi_domain_for_each_memregion(dom, reg)
+	{
+		if (NPMP <= pmp_idx)
+			break;
+		clear_pmp(pmp_idx);
+		pmp_idx++;
+	}
+
+    // clear sys_manager PMP region registers(using high number regs)
+    dom = sys_manager_domain.sbi_domain;
+	sbi_domain_for_each_memregion(dom, reg)
+	{
+		if (NPMP <= pmp_idx)
+			break;
+        clear_pmp(pmp_idx);
+		pmp_idx++;
+	}
+
+    // reset sys_manager PMP region registers
+    pmp_idx = 0;
+	sbi_domain_for_each_memregion(dom, reg)
+	{
+		if (NPMP <= pmp_idx) {
+            sbi_printf(
+			    "SBI Warning: %s PMP register is not enough\n", __func__);
+            break;
+        }
+
+		pmp_flags = 0;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_READABLE)
+			pmp_flags |= PMP_R;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_WRITEABLE)
+			pmp_flags |= PMP_W;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_EXECUTABLE)
+			pmp_flags |= PMP_X;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_MMODE)
+			pmp_flags |= PMP_L;
+
+		pmp_addr = reg->base >> PMP_SHIFT;
+		if (PMP_GRAN_LOG2 <= reg->order && pmp_addr < pmp_addr_max)
+			pmp_set(pmp_idx++, pmp_flags, reg->base,
+				reg->order);
+		else {
+			sbi_printf("Can not configure pmp for domain %s",
+				   dom->name);
+			sbi_printf(
+				"because memory region address %lx or size %lx is not in range\n",
+				reg->base, reg->order);
+		}
+	}
+
+	return 0;
+}
+
 int swap_between_domains(uintptr_t *host_regs, struct domain_t *dom)
 {
 	unsigned int this_hart = current_hartid();

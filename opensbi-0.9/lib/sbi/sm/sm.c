@@ -271,10 +271,13 @@ int sm_domain_init(struct sbi_scratch *scratch)
 
 uintptr_t sm_load_sec_linux()
 {
-  uintptr_t retval = 0;
   // grant normal access
+  if(retrieve_manager_access(0) != 0){
+    sbi_printf("[Penglai Monitor] %s Error: Secure linux authenticate failed\r\n",__func__);
+    return -1;
+  }
 
-  return retval;
+  return 0;
 }
 
 uintptr_t sm_run_sec_linux(uintptr_t *regs, uintptr_t tee_sbi_param_ptr)
@@ -292,7 +295,11 @@ uintptr_t sm_run_sec_linux(uintptr_t *regs, uintptr_t tee_sbi_param_ptr)
   sbi_memcpy(&tee_sbi_param, (void*)tee_sbi_param_ptr, sizeof(struct tee_sbi_param_t));
 
   // retrieve normal access
-  
+  if(retrieve_manager_access(0) != 0){
+    sbi_printf("[Penglai Monitor] %s Error: Secure linux authenticate failed\r\n",__func__);
+    retval = -1UL;
+    goto out;
+  }
 
   sbi_printf("[%s] Memory isolated\n", __func__);
 

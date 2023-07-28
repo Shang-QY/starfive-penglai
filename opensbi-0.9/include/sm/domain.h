@@ -48,5 +48,7 @@ int domain_info_init(struct sbi_scratch *scratch);
 uintptr_t finish_init_domain(uintptr_t *regs);
 uintptr_t run_domain(uintptr_t *regs, unsigned int domain_id);
 uintptr_t exit_domain(uintptr_t *regs);
+int grant_manager_access(unsigned int domain_id);
+int retrieve_manager_access(unsigned int domain_id);
 
 #endif /* _DOMAIN_H */
