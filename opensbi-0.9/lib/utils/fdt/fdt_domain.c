@@ -399,6 +399,38 @@ static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 	else
 		dom->system_reset_allowed = FALSE;
 
+	/* Read "system-manager" DT property */
+	if (fdt_get_property(fdt, domain_offset,
+			     "system-manager", NULL))
+		dom->system_manager = TRUE;
+	else
+		dom->system_manager = FALSE;
+
+	/* Read "pre-start-prio" DT property */
+	val32 = INT32_MAX;
+	val = fdt_getprop(fdt, domain_offset, "pre-start-prio", &len);
+	if (val && len >= 4)
+		val32 = fdt32_to_cpu(val[0]);
+	if (val32 < 0)
+		val32 = INT32_MAX;
+	dom->pre_start_prio = val32;
+
+	/* Read "measure-region" DT property */
+	val = fdt_getprop(fdt, domain_offset, "measure-region", &len);
+	if (val && len != -1) {
+		val64		  = 0;
+		val64		  = fdt32_to_cpu(val[0]);
+		val64		  = (val64 << 32) | fdt32_to_cpu(val[1]);
+		dom->measure_addr = val64;
+		val64		  = 0;
+		val64		  = fdt32_to_cpu(val[2]);
+		val64		  = (val64 << 32) | fdt32_to_cpu(val[3]);
+		dom->measure_size = val64;
+	} else {
+		dom->measure_addr = 0;
+		dom->measure_size = 0;
+	}
+
 	/* Find /cpus DT node */
 	cpus_offset = fdt_path_offset(fdt, "/cpus");
 	if (cpus_offset < 0)

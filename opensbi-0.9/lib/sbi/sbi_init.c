@@ -326,6 +326,14 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 	}
 
+	// Check and statistic domain information for PenglaiZone
+	rc = sm_domain_init(scratch);
+	if (rc) {
+		sbi_printf("%s: PenglaiZone domain init failed (error %d)\n",
+			   __func__, rc);
+		sbi_hart_hang();
+	}
+
 	/*
 	 * Note (DD):
 	 * 	In our case, the PMP set by domain will be erased, as penglai
@@ -464,56 +472,17 @@ static void init_warm_resume(struct sbi_scratch *scratch)
 static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	int hstate;
-    unsigned long saved_mie, cmip;
 
-    sbi_printf("[hart] hart %d init_warmboot. before wait for coldboot\n", hartid);
 	wait_for_coldboot(scratch, hartid);
 
 	hstate = sbi_hsm_hart_get_state(sbi_domain_thishart_ptr(), hartid);
-	if (hstate < 0) {
-        sbi_printf("[hart] hart %d hstate: %d. before hart hang\n", hartid, hstate);
+	if (hstate < 0)
 		sbi_hart_hang();
-    }
 
-	if (hstate == SBI_HSM_STATE_SUSPENDED){
-        sbi_printf("[hart] hart %d before init_warm_resume\n", hartid);
+	if (hstate == SBI_HSM_STATE_SUSPENDED)
 		init_warm_resume(scratch);
-	} else {
-        sbi_printf("[hart] hart %d before init_warm_startup\n", hartid);
+	else
 		init_warm_startup(scratch, hartid);
-    }
-
-    /* Save MIE CSR */
-	saved_mie = csr_read(CSR_MIE);
-
-	/* Set MSIE bit to receive IPI */
-	csr_set(CSR_MIE, MIP_MSIP);
-
-    while (true) {
-        sbi_printf("[sbi_init_warmboot] hart%d is waiting for a MSIP interupt\n", hartid);
-
-        /* Qingyu: now just wait for an interupt */
-        while (true) {
-            sbi_printf("[sbi_init_warmboot] hart%d ready to enter wfi\n", hartid);
-            wfi();
-            cmip = csr_read(CSR_MIP);
-            if(cmip & MIP_MSIP){
-                sbi_printf("[sbi_init_warmboot] hart%d is waked by MSIP interupt, it's time to measure sec_linux\n", hartid);
-                break;
-            }
-        };
-
-        hash_sec_linux();
-        sbi_printf("[sbi_init_warmboot] Measuremant finished, it's time to verify the Cryper Certificate Struct\n");
-
-        // pass authentication
-        if(auth_sec_linux() == 0){
-            sbi_printf("[sbi_init_warmboot] Authenticate succeed, it's time to start sec_linux\n");
-            break;
-        }
-    }
-
-    csr_write(CSR_MIE, saved_mie);
 
 	sbi_hart_switch_mode(hartid, scratch->next_arg1,
 			     scratch->next_addr,
