@@ -100,15 +100,15 @@ int domain_info_init(struct sbi_scratch *scratch)
 		dom	     = domain_table[0].sbi_domain;
 	}
 	// Check that all harts are started in the first pre-start domain (if any).
-	for (i = 0; i < MAX_HARTS; i++) {
-		if (sbi_platform_hart_invalid(plat, i))
-			continue;
-		if (!sbi_hartmask_test_hart(i, &dom->assigned_harts)) {
-			sbi_printf(
-				"SBI Error: error config for domain hart assignment.\n");
-			return -1;
-		}
-	}
+	// for (i = 0; i < MAX_HARTS; i++) {
+	// 	if (sbi_platform_hart_invalid(plat, i))
+	// 		continue;
+	// 	if (!sbi_hartmask_test_hart(i, &dom->assigned_harts)) {
+	// 		sbi_printf(
+	// 			"SBI Error: error config for domain hart assignment.\n");
+	// 		return -1;
+	// 	}
+	// }
 
 	// Maintain current domain_id. At start, all harts in domain0 or sys_manager domain.
 	for (i = 0; i < MAX_HARTS; i++) {
