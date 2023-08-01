@@ -234,6 +234,14 @@ int sbi_hart_pmp_configure(struct sbi_scratch *scratch)
 		}
 	}
 
+    int next_pmp_idx = 0;
+    sbi_domain_for_each_memregion(dom, reg) {
+		if (pmp_idx - 1 <= next_pmp_idx)
+			break;
+        clear_pmp(next_pmp_idx);
+		next_pmp_idx++;
+	}
+
 	return 0;
 }
 

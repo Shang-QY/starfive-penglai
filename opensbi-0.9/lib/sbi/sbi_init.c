@@ -273,7 +273,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 
 	sbi_boot_print_banner(scratch);
 
-    dump_pmps();
+    // dump_pmps();
 
 	rc = sbi_platform_irqchip_init(plat, TRUE);
 	if (rc) {
@@ -335,8 +335,8 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	}
 
 	/*
-	 * Note (DD):
-	 * 	In our case, the PMP set by domain will be erased, as penglai
+	 * Note (Qingyu):
+	 * 	In our case, the PMP set by original domain will be erased, as penglaiZone
 	 * 	will take control of PMP
 	 * */
 	rc = sbi_hart_pmp_configure(scratch);
@@ -346,7 +346,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 	}
 
-    dump_pmps();
+    // dump_pmps();
 
 	/*
 	 * Note: Platform final initialization should be last so that
