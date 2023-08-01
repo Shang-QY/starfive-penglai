@@ -78,6 +78,10 @@ struct sbi_domain {
 	unsigned long next_mode;
 	/** Is domain allowed to reset the system */
 	bool system_reset_allowed;
+	/** Properties used by PenglaiZone */
+	bool system_manager;
+	u32 pre_start_prio;
+	unsigned long measure_addr, measure_size;
 };
 
 /** The root domain instance */

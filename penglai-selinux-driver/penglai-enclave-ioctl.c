@@ -18,6 +18,10 @@ int penglai_load_and_run_linux(struct file *filep, unsigned long args)
     struct tee_sbi_param_t *tee_sbi_param = kmalloc(sizeof(struct tee_sbi_param_t), GFP_KERNEL);
     int ret;
 
+    ret = load_linux();
+    if(ret)
+        goto out;
+
     printk("KERNEL MODULE : hello qy\n");
     printk("KERNEL MODULE : load linux_img: linear va: 0x%lx, and pa: 0x%lx\n", payload_bin_start, (unsigned long)(__pa(payload_bin_start)));
     if(copy_from_user((void*)payload_bin_start, (void*)enclave_param->bin_ptr, enclave_param->bin_size))

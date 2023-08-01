@@ -37,6 +37,7 @@
 #define SBI_SM_RUN_SEC_LINUX             90
 #define SBI_SM_DEBUG_PRINT               88
 #define SBI_SM_ATTEST_SEC_LINUX          87
+#define SBI_SM_LOAD_SEC_LINUX            86
 
 
 #define PRIVATE_KEY_SIZE       32
@@ -76,6 +77,8 @@ struct tee_sbi_param_t
     unsigned long dtb_loadaddr;
     enclave_css_t enclave_css;
 };
+
+int load_linux(void);
 
 int run_linux(struct tee_sbi_param_t *tee_sbi_param);
 

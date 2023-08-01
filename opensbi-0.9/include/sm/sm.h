@@ -32,6 +32,7 @@ extern uintptr_t _fw_start[], _fw_end[];
 #define SBI_SM_RUN_SEC_LINUX    90
 #define SBI_DEBUG_PRINT         88
 #define SBI_SM_ATTEST_SEC_LINUX    87
+#define SBI_SM_LOAD_SEC_LINUX    86
 
 //Enclave SBI numbers
 #define SBI_EXIT_ENCLAVE        99
@@ -86,6 +87,10 @@ uintptr_t sm_exit_enclave(uintptr_t *regs, unsigned long retval);
 uintptr_t sm_do_timer_irq(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc);
 
 int check_in_enclave_world();
+
+int sm_domain_init(struct sbi_scratch *scratch);
+
+uintptr_t sm_load_sec_linux();
 
 uintptr_t sm_run_sec_linux(uintptr_t tee_sbi_param_ptr);
 

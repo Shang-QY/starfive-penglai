@@ -8,6 +8,7 @@
 #include <sm/math.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_ipi.h>
+#include <sm/domain.h>
 
 //static int sm_initialized = 0;
 //static spinlock_t sm_init_lock = SPINLOCK_INIT;
@@ -16,7 +17,7 @@ struct tee_sbi_param_t tee_sbi_param;
 
 void sm_init()
 {
-  platform_init();
+  // platform_init();
   attest_init();
 }
 
@@ -263,6 +264,24 @@ uintptr_t sm_destroy_enclave(uintptr_t *regs, uintptr_t enclave_id)
   return ret;
 }
 
+int sm_domain_init(struct sbi_scratch *scratch)
+{
+  return domain_info_init(scratch);
+}
+
+uintptr_t sm_load_sec_linux()
+{
+  // grant normal access
+  if(grant_manager_access(0) != 0){
+    sbi_printf("[Penglai Monitor] %s Error: Secure linux authenticate failed\r\n",__func__);
+    return -1;
+  }
+
+  dump_pmps();
+
+  return 0;
+}
+
 uintptr_t sm_run_sec_linux(uintptr_t tee_sbi_param_ptr)
 {
   uintptr_t retval = 0;
@@ -276,6 +295,15 @@ uintptr_t sm_run_sec_linux(uintptr_t tee_sbi_param_ptr)
     goto out;
   }
   sbi_memcpy(&tee_sbi_param, (void*)tee_sbi_param_ptr, sizeof(struct tee_sbi_param_t));
+
+  // retrieve normal access
+  if(retrieve_manager_access(0) != 0){
+    sbi_printf("[Penglai Monitor] %s Error: Secure linux authenticate failed\r\n",__func__);
+    retval = -1UL;
+    goto out;
+  }
+
+  dump_pmps();
 
   u32 source_hart = current_hartid();
 

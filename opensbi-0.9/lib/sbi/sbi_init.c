@@ -273,7 +273,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 
 	sbi_boot_print_banner(scratch);
 
-    dump_pmps();
+    // dump_pmps();
 
 	rc = sbi_platform_irqchip_init(plat, TRUE);
 	if (rc) {
@@ -326,9 +326,17 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 	}
 
+	// Check and statistic domain information for PenglaiZone
+	rc = sm_domain_init(scratch);
+	if (rc) {
+		sbi_printf("%s: PenglaiZone domain init failed (error %d)\n",
+			   __func__, rc);
+		sbi_hart_hang();
+	}
+
 	/*
-	 * Note (DD):
-	 * 	In our case, the PMP set by domain will be erased, as penglai
+	 * Note (Qingyu):
+	 * 	In our case, the PMP set by original domain will be erased, as penglaiZone
 	 * 	will take control of PMP
 	 * */
 	rc = sbi_hart_pmp_configure(scratch);
