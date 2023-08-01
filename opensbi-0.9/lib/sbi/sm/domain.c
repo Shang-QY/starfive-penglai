@@ -41,7 +41,7 @@ int domain_info_init(struct sbi_scratch *scratch)
 	int found_sys_manager = 0;
 	int count	      = 0;
 	int i, j;
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	// const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	// PenglaiZone requires:
 	//      All domains run in S-mode, and there is exactly one sys_manager domain,
